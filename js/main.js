@@ -2,10 +2,26 @@
 
 
 var gl = null,
+	glAttrPointerVertex = null,
+	glBuffers = {},
 	glShaderPrograms = {};
+var gHeight, gWidth;
 
 
 window.addEventListener( "load", main );
+
+
+/**
+ * Main animation loop.
+ * @param {float} elapsedTime Elapsed time since first draw in milliseconds.
+ */
+function animate( elapsedTime ) {
+	UI.stats.begin();
+	draw( elapsedTime );
+	UI.stats.end();
+
+	requestAnimationFrame( animate );
+}
 
 
 /**
@@ -19,25 +35,58 @@ function callbackShadersLoaded() {
 	link.forEach( function( item, index, array ) {
 		gl.linkProgram( glShaderPrograms[item] );
 	} );
+
+	initRenderTarget();
+	UI.print( "Beginning rendering ..." );
+
+	// Leave some time for the UI to print messages.
+	window.setTimeout( function( ev ) {
+		if( CFG.CONTINUOUSLY ) {
+			animate( 0.0 );
+		}
+		else {
+			draw( 0.0 );
+		}
+	}, 1 );
 }
 
 
 /**
- * Initialize the canvas element.
- * @return {DOMElement} The HTML canvas or null on error.
+ * Render the scene.
+ * @param {float} elapsedTime Elapsed time since first draw in milliseconds.
  */
-function initCanvas() {
-	var canvas = document.getElementById( "render-target" );
+function draw( elapsedTime ) {
+	gl.clear( gl.COLOR_BUFFER_BIT );
 
-	if( !canvas ) {
-		console.error( "No canvas#render-target found!" );
-		return null;
-	}
+	gl.useProgram( glShaderPrograms["path-tracing"] );
+	gl.bindBuffer( gl.ARRAY_BUFFER, glBuffers["path-tracing"]["array_buffer"] );
+	gl.vertexAttribPointer( glAttrPointerVertex, 2, gl.FLOAT, gl.FALSE, 0, 0 );
 
-	canvas.width = window.innerWidth;
-	canvas.height = window.innerHeight;
+    gl.uniform2f( gl.getUniformLocation( glShaderPrograms["path-tracing"], "uResolution" ), gWidth, gHeight );
+    gl.uniform1f( gl.getUniformLocation( glShaderPrograms["path-tracing"], "uGlobalTime" ), elapsedTime * 0.0001 );
 
-	return canvas;
+	gl.drawArrays( gl.TRIANGLE_STRIP, 0, 4 );
+}
+
+
+/**
+ * Initialize the render target area.
+ */
+function initRenderTarget() {
+	gl.useProgram( glShaderPrograms["path-tracing"] );
+	glAttrPointerVertex = gl.getAttribLocation( glShaderPrograms["path-tracing"], "vertexPos" );
+	gl.enableVertexAttribArray( glAttrPointerVertex );
+
+	var vertices = [
+		-1.0, -1.0,
+		-1.0, +1.0,
+		+1.0, -1.0,
+		+1.0, +1.0
+	];
+	glBuffers["path-tracing"] = { "array_buffer": gl.createBuffer() };
+
+	gl.bindBuffer( gl.ARRAY_BUFFER, glBuffers["path-tracing"]["array_buffer"] );
+	gl.bufferData( gl.ARRAY_BUFFER, new Float32Array( vertices ), gl.STATIC_DRAW );
 }
 
 
@@ -61,7 +110,7 @@ function initWebGL( canvas ) {
 		return null;
 	}
 
-	webgl.clearColor( 1.0, 1.0, 1.0, 0.0 );
+	webgl.clearColor( CFG.CLEAR_COLOR[0], CFG.CLEAR_COLOR[1], CFG.CLEAR_COLOR[2], CFG.CLEAR_COLOR[3] );
 	webgl.clear( webgl.COLOR_BUFFER_BIT );
 	webgl.viewport( 0, 0, canvas.width, canvas.height );
 
@@ -71,6 +120,7 @@ function initWebGL( canvas ) {
 
 /**
  * Load the shaders.
+ * @param {function} callback Callback function to call after having loaded all shaders.
  */
 function loadShaders( callback ) {
 	var load = ["path-tracing.vert", "path-tracing.frag"];
@@ -101,13 +151,17 @@ function loadShaders( callback ) {
 				shader = gl.createShader( gl.FRAGMENT_SHADER );
 			}
 			else {
-				console.error( "Unknown shader type: " + shaderType );
+				UI.printError( "Unknown shader type: \"" + shaderType + "\"" );
 				return;
 			}
 
-			gl.shaderSource( shader, xhr.responseText );
+			var shaderCode = shaderSetDefines( xhr.responseText );
+
+			gl.shaderSource( shader, shaderCode );
 			gl.compileShader( shader );
 			gl.attachShader( glShaderPrograms[shaderName], shader );
+
+			UI.print( "Shader \"" + path[path.length - 1] + "\" loaded." );
 
 			if( index == array.length - 1 ) {
 				callback();
@@ -115,7 +169,7 @@ function loadShaders( callback ) {
 		};
 
 		xhr.onerror = function( ev ) {
-			console.error( "Failed to load shader." );
+			UI.printError( "Failed to load shader from \"" + ev.target.responseURL + "\"." );
 		};
 
 		xhr.overrideMimeType( "text/plain; charset=utf-8" );
@@ -126,15 +180,29 @@ function loadShaders( callback ) {
 
 
 /**
+ * Replace placeholders inside the shader code with values from the config.
+ * @param  {string} shaderCode Shader code.
+ * @return {string}            Shader code with replacements.
+ */
+function shaderSetDefines( shaderCode ) {
+	shaderCode = shaderCode.replace( "%MAX_DEPTH%", CFG.SHADER.MAX_DEPTH );
+	shaderCode = shaderCode.replace( "%SAMPLES%", CFG.SHADER.SAMPLES );
+
+	return shaderCode;
+}
+
+
+/**
  * Main function, entry point.
  */
 function main() {
-	var canvas = initCanvas();
-	gl = initWebGL( canvas );
+	UI.init();
+	gl = initWebGL( UI.getCanvas() );
 
 	if( !gl ) {
 		return;
 	}
 
+	window.addEventListener( "resize", UI.resize );
 	loadShaders( callbackShadersLoaded );
 }

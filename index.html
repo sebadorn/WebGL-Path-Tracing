@@ -4,21 +4,14 @@
 <head>
 	<meta charset="utf-8" />
 	<title>WebGL Path Tracing</title>
-	<style>
-		* {
-			margin: 0;
-			padding: 0;
-		}
-		html {
-			background-color: #f0f0f0;
-			height: 100%;
-			overflow: hidden;
-			width: 100%;
-		}
-		canvas {
-			background-color: #ffffff;
-		}
-	</style>
+	<link rel="stylesheet" href="css/screen.css" />
+	<script src="js/stats.min.js"></script>
+	<script src="js/config.js"></script>
+	<script src="js/Object3D.js"></script>
+	<script src="js/ObjLoader.js"></script>
+	<script src="js/BVH.js"></script>
+	<script src="js/SceneManager.js"></script>
+	<script src="js/UI.js"></script>
 	<script src="js/main.js"></script>
 </head>
 <body>
@@ -26,6 +19,11 @@
 <canvas id="render-target">
 	Your browser doesn't support the HTML5 &lt;canvas&gt; element.
 </canvas>
+
+<form class="controls">
+	<input id="file-import" type="file" />
+	<ol id="stdout"></ol>
+</form>
 
 </body>
 </html>

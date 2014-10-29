@@ -1,0 +1,85 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+
+html {
+	background-color: #f0f0f0;
+	font-family: "Open Sans", "DejaVu Sans", Arial, sans-serif;
+	font-size: 12px;
+	height: 100%;
+	overflow: hidden;
+	width: 100%;
+}
+
+body {
+	height: 100%;
+	text-align: center;
+}
+
+canvas {
+	background-color: #ffffff;
+	box-shadow: 0 20px 40px 0 rgba( 0, 0, 0, 0.3 );
+	position: relative;
+	-moz-transform: translateY( -50% );
+	-ms-transform: translateY( -50% );
+	-webkit-transform: translateY( -50% );
+	transform: translateY( -50% );
+	top: 50%;
+}
+
+input,textarea {
+	font-family: "Open Sans", "DejaVu Sans", Arial, sans-serif;
+	font-size: 12px;
+}
+
+
+#stats {
+	position: absolute;
+	right: 10px;
+	top: 10px;
+}
+
+
+.controls {
+	background-color: rgba( 0, 0, 0, 0.6 );
+	color: #ffffff;
+	left: 10px;
+	padding: 10px;
+	position: absolute;
+	text-align: left;
+	top: 10px;
+	width: 320px;
+}
+
+	input[type="file"] {
+		background-color: #202020;
+		display: block;
+		margin-bottom: 10px;
+		width: 100%;
+	}
+
+	#stdout {
+		background-color: rgba( 0, 0, 0, 0.5 );
+		border-radius: 2px;
+		color: #f0f0f0;
+		display: block;
+		font-family: monospace;
+		font-size: 11px;
+		height: 80px;
+		list-style-type: none;
+		overflow-x: auto;
+		padding: 6px;
+	}
+
+		#stdout li {
+			margin-bottom: 4px;
+		}
+
+		.error {
+			color: #F36D5E;
+		}
+
+		.warn {
+			color: #EFE773;
+		}

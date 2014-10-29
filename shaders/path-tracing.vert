@@ -1,5 +1,5 @@
-uniform vec3 vertex;
+attribute vec2 vertexPos;
 
 void main( void ) {
-	gl_Position = vec4( vertex, 1.0 );
+	gl_Position = vec4( vertexPos, 0.0, 1.0 );
 }
