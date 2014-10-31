@@ -2,6 +2,13 @@
 
 
 var CFG = {
+	// Bounding Volume Hierarchy
+	BVH: {
+		MAX_FACES: 2, // [int], max faces per leaf node
+		SAH_FACES_LIMIT: 1000, // [int]
+		USE_SPATIAL_SPLITS: false // [boolean]
+	},
+
 	// OpenGL color for the cleared render area.
 	// RGBA
 	CLEAR_COLOR: [1.0, 1.0, 1.0, 0.0], // [array<float>]
@@ -14,6 +21,8 @@ var CFG = {
 	SHADER: {
 		// Max depth of rays
 		MAX_DEPTH: 3, // [int]
+		// Phong Tessellation
+		PHONG_TESSELLATION: -1.0, // [float], <= 0.0 means disabled
 		// Number of samples computed per draw
 		SAMPLES: 5, // [int]
 	},

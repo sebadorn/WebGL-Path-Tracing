@@ -1,6 +1,16 @@
 "use strict";
 
 
+var Object3D = function( objectName ) {
+	this.name = objectName || "";
+
+	this.facesV = [];
+	this.facesVN = [];
+	this.facesVT = [];
+};
+
+
+
 var ObjLoader = function() {
 	this.facesV = [];
 	this.facesVN = [];
@@ -207,4 +217,40 @@ ObjLoader.prototype._parseVertexNormal = function( line ) {
 		parseFloat( parts[2] ),
 		parseFloat( parts[3] )
 	);
+};
+
+
+ObjLoader.getFaceNormalsOfObject = function( object, offset ) {
+	var faceNormals = [];
+
+	for( var i = 0; i < objects.facesVN.length; i += 3 ) {
+		var f = {
+			a: object.facesVN[i],
+			b: object.facesVN[i + 1],
+			c: object.facesVN[i + 2],
+			w: offset + faceNormals.length
+		};
+
+		faceNormals.push( f );
+	}
+
+	return faceNormals;
+};
+
+
+ObjLoader.getFacesOfObject = function( object, offset ) {
+	var faces = [];
+
+	for( var i = 0; i < objects.facesV.length; i += 3 ) {
+		var f = {
+			a: object.facesV[i],
+			b: object.facesV[i + 1],
+			c: object.facesV[i + 2],
+			w: offset + faces.length
+		}
+
+		faces.push( f );
+	}
+
+	return faces;
 };
