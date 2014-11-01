@@ -15,8 +15,8 @@ var ObjLoader = function() {
 	this.facesV = [];
 	this.facesVN = [];
 	this.facesVT = [];
+	this.normals = [];
 	this.objects = [];
-	this.vertexNormals = [];
 	this.vertexTextures = [];
 	this.vertices = [];
 };
@@ -31,7 +31,8 @@ ObjLoader.prototype.getObj = function() {
 		facesV: this.facesV,
 		facesVN: this.facesVN,
 		facesVT: this.facesVT,
-		vertexNormals: this.vertexNormals,
+		normals: this.normals,
+		objects: this.objects,
 		vertexTextures: this.vertexTextures,
 		vertices: this.vertices
 	};
@@ -212,7 +213,7 @@ ObjLoader.prototype._parseVertex = function( line ) {
 ObjLoader.prototype._parseVertexNormal = function( line ) {
 	var parts = line.split( /\s+/g );
 
-	this.vertexNormals.push(
+	this.normals.push(
 		parseFloat( parts[1] ),
 		parseFloat( parts[2] ),
 		parseFloat( parts[3] )
@@ -223,7 +224,7 @@ ObjLoader.prototype._parseVertexNormal = function( line ) {
 ObjLoader.getFaceNormalsOfObject = function( object, offset ) {
 	var faceNormals = [];
 
-	for( var i = 0; i < objects.facesVN.length; i += 3 ) {
+	for( var i = 0; i < object.facesVN.length; i += 3 ) {
 		var f = {
 			a: object.facesVN[i],
 			b: object.facesVN[i + 1],
@@ -241,7 +242,7 @@ ObjLoader.getFaceNormalsOfObject = function( object, offset ) {
 ObjLoader.getFacesOfObject = function( object, offset ) {
 	var faces = [];
 
-	for( var i = 0; i < objects.facesV.length; i += 3 ) {
+	for( var i = 0; i < object.facesV.length; i += 3 ) {
 		var f = {
 			a: object.facesV[i],
 			b: object.facesV[i + 1],

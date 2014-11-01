@@ -11,6 +11,9 @@ var SceneManager = {
 
 	addObj: function( obj ) {
 		SceneManager._scene.models.push( obj );
+		var start = Date.now();
+		var bvh = new BVH( obj.objects, obj.vertices, obj.normals );
+		UI.print( "[SceneManager] Created BVH in " + ( Date.now() - start ) + " ms." );
 	},
 
 

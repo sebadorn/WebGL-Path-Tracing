@@ -48,7 +48,7 @@ BVH.prototype.buildTree = function( faces, bb, depth, useGivenBB, rootSA ) {
 	}
 
 	containerNode.depth = depth;
-	this.depthReached = Math.max( depth, depthReached );
+	this.depthReached = Math.max( depth, this.depthReached );
 
 	// leaf node
 	if( faces.length <= CFG.BVH.MAX_FACES ) {
@@ -133,7 +133,7 @@ BVH.prototype.buildTreesFromObjects = function( objects, vertices, normals ) {
 		);
 
 		var rootNode = this.makeNode( triFaces, true );
-		var rootSA = MathHelp.getSurfaceArea( rootNode.bbMin, rootNode.bbMax );
+		var rootSA = MathHelp.getSurfaceArea( rootNode.bb );
 
 		var st = this.buildTree( triFaces, new THREE.Box3(), 1, false, rootSA );
 		subTrees.push( st );
@@ -177,12 +177,13 @@ BVH.prototype.buildWithMidpointSplit = function( node, faces, leftFaces, rightFa
  * @return {Object}
  */
 BVH.prototype.buildWithSAH = function( node, faces, leftFaces, rightFaces ) {
+	var lambda = Infinity;
 	var nodeSA = MathHelp.getSurfaceArea( node.bb );
 	var bestSAH = nodeSA * faces.length; // TODO
 	bestSAH = Infinity;
 
 	for( var axis = 0; axis <= 2; axis++ ) {
-		result = this.splitBySAH( 1.0 / nodeSA, bestSAH, axis, faces, leftFaces, rightFaces, lambda );
+		var result = this.splitBySAH( 1.0 / nodeSA, bestSAH, axis, faces, leftFaces, rightFaces, lambda );
 		bestSAH = result.bestSAH;
 		lambda = result.lambda;
 	}
@@ -323,7 +324,7 @@ BVH.prototype.getMean = function( faces, axis ) {
 	for( var i = 0; i < faces.length; i++ ) {
 		var center = faces[i].bb.min.clone();
 		center.add( faces[i].bb.max );
-		center.multiplyByScalar( 0.5 );
+		center.multiplyScalar( 0.5 );
 		sum += center[axis];
 	}
 
@@ -343,7 +344,7 @@ BVH.prototype.getMeanOfNodes = function( nodes, axis ) {
 	for( var i = 0; i < nodes.length; i++ ) {
 		var center = nodes[i].bb.max.clone();
 		center.sub( nodes[i].bb.min );
-		center.multiplyByScalar( 0.5 );
+		center.multiplyScalar( 0.5 );
 		sum += center[axis];
 	}
 
@@ -368,20 +369,23 @@ BVH.prototype.groupTreesToNodes = function( nodes, parent, depth ) {
 	var axis = this.longestAxis( parent );
 	var midpoint = 0.5 * ( parent.bb.min[axis] + parent.bb.max[axis] );
 
-	var groups = this.splitNodes( nodes, midpoint, axis );
+	var leftGroup = [],
+	    rightGroup = [];
 
-	if( groups.left.length <= 0 || groups.right.length <= 0 ) {
+	this.splitNodes( nodes, midpoint, axis, leftGroup, rightGroup );
+
+	if( leftGroup.length <= 0 || rightGroup.length <= 0 ) {
 		var mean = this.getMeanOfNodes( nodes, axis );
-		groups = this.splitNodes( nodes, mean, axis );
+		this.splitNodes( nodes, mean, axis, leftGroup, rightGroup );
 	}
 
-	var leftNode = this.makeContainerNode( groups.left, false );
+	var leftNode = this.makeContainerNode( leftGroup, false );
 	parent.leftChild = leftNode;
-	this.groupTreesToNodes( groups.left, parent.leftChild, depth + 1 );
+	this.groupTreesToNodes( leftGroup, parent.leftChild, depth + 1 );
 
-	var rightNode = this.makeContainerNode( groups.right, false );
+	var rightNode = this.makeContainerNode( rightGroup, false );
 	parent.rightChild = rightNode;
-	this.groupTreesToNodes( groups.right, parent.rightChild, depth + 1 );
+	this.groupTreesToNodes( rightGroup, parent.rightChild, depth + 1 );
 };
 
 
@@ -422,7 +426,7 @@ BVH.prototype.growAABBsForSAH = function( faces, leftBB, rightBB, leftSA, rightS
 		bbMins.push( faces[i + 1].bb.min.clone() );
 		bbMaxs.push( faces[i + 1].bb.max.clone() );
 
-		var bb = MathHelp.getSurfaceArea( bbMins, bbMaxs );
+		var bb = MathHelp.getAABB( bbMins, bbMaxs );
 
 		rightBB[i] = new THREE.Box3( bb.min, bb.max );
 		rightSA[i] = MathHelp.getSurfaceArea( bb );
@@ -552,7 +556,7 @@ BVH.prototype.splitBySAH = function( nodeSA, bestSAH, axis, faces, leftFaces, ri
 	var newSAH, numFacesLeft, numFacesRight;
 
 	for( var i = 0; i < faces.length - 1; i++ ) {
-		newSAH = this.calcSAH( nodeSA, leftSA[i], i + 1, rightSA[i], numFaces - i - 1 );
+		newSAH = this.calcSAH( nodeSA, leftSA[i], i + 1, rightSA[i], faces.length - i - 1 );
 
 		if( newSAH < bestSAH ) {
 			bestSAH = newSAH;
@@ -565,7 +569,7 @@ BVH.prototype.splitBySAH = function( nodeSA, bestSAH, axis, faces, leftFaces, ri
 		rightFaces = [];
 
 		var j = indexSplit - 1;
-		var diff = rightBB[j][1].clone().sub( rightBB[j][1].clone().sub( leftBB[j][1] ) );
+		var diff = rightBB[j].max.clone().sub( rightBB[j].max.clone().sub( leftBB[j].max ) );
 		lambda = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
 
 		for( var i = 0; i < indexSplit; i++ ) {

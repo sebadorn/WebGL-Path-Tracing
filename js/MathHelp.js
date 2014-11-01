@@ -30,6 +30,11 @@ var MathHelp = {
 	},
 
 
+	/**
+	 * Get the surface area of a box.
+	 * @param  {THREE.Box3} bb
+	 * @return {float}
+	 */
 	getSurfaceArea: function( bb ) {
 		var xy = 2.0 * Math.abs( bb.max.x - bb.min.x ) * Math.abs( bb.max.y - bb.min.y );
 		var zy = 2.0 * Math.abs( bb.max.z - bb.min.z ) * Math.abs( bb.max.y - bb.min.y );
