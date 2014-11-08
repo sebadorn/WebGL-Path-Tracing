@@ -4,6 +4,7 @@
 var CFG = {
 	// Bounding Volume Hierarchy
 	BVH: {
+		EMERGENCY_DEPTH_LIMIT: 10, // [int]
 		MAX_FACES: 2, // [int], max faces per leaf node
 		SAH_FACES_LIMIT: 1000, // [int]
 		USE_SPATIAL_SPLITS: false // [boolean]
