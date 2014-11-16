@@ -291,15 +291,6 @@ vec3 projectOnPlane( vec3 q, vec3 p, vec3 n ) {
 
 
 /**
- * MACRO: Reflect a ray.
- * @param  {vec3} dir Direction of ray.
- * @param  {vec3} n   Normal of surface.
- * @return {vec3}     Reflected ray direction.
- */
-#define reflect( dir n ) ( ( dir ) - 2.0f * dot( ( n ), ( dir ) ) * ( n ) )
-
-
-/**
  * Get a new direction for a ray hitting a transparent surface (glass etc.).
  * @param  {ray}      r   Current ray.
  * @param  {material} mtl Material of the hit surface.
@@ -307,28 +298,30 @@ vec3 projectOnPlane( vec3 q, vec3 p, vec3 n ) {
  */
 vec3 refract( ray r, material mtl ) {
 	bool into = dot( r.normal, r.dir ) < 0.0f;
-	vec3 nl = into ? r.normal : -r.normal;
+	// vec3 nl = into ? r.normal : -r.normal;
 
 	float m1 = into ? NI_AIR : mtl.Ni;
 	float m2 = into ? mtl.Ni : NI_AIR;
 	float m = m1 / m2;
-	float cosI = -dot( r.dir, nl );
-	float sinT2 = m * m * ( 1.0f - cosI * cosI );
+	// float cosI = -dot( r.dir, nl );
+	// float sinT2 = m * m * ( 1.0f - cosI * cosI );
 
-	// Critical angle. Total internal reflection.
-	if( sinT2 > 1.0f ) {
-		return reflect( r.dir, nl );
-	}
+	// // Critical angle. Total internal reflection.
+	// if( sinT2 > 1.0f ) {
+	// 	return reflect( r.dir, nl );
+	// }
 
-	// Reflectance and transmission.
+	// // Reflectance and transmission.
 
-	float r0 = ( m1 - m2 ) / ( m1 + m2 );
-	float c = ( m1 > m2 ) ? sqrt( 1.0f - sinT2 ) : cosI;
-	float reflectance = fresnel( c, r0 * r0 );
+	// float r0 = ( m1 - m2 ) / ( m1 + m2 );
+	// float c = ( m1 > m2 ) ? sqrt( 1.0f - sinT2 ) : cosI;
+	// float reflectance = fresnel( c, r0 * r0 );
 
-	vec3 newRay = ( reflectance < rand() )
-	            ? m * r.dir + ( m * cosI - sqrt( 1.0f - sinT2 ) ) * nl
-	            : reflect( r.dir, nl );
+	// vec3 newRay = ( reflectance < rand() )
+	//             ? m * r.dir + ( m * cosI - sqrt( 1.0f - sinT2 ) ) * nl
+	//             : reflect( r.dir, nl );
 
-	return normalize( newRay );
+	// return normalize( newRay );
+
+	return refract( r.dir, r.normal, m );
 }

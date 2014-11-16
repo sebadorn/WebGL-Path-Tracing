@@ -6,23 +6,36 @@
 #define IMG_HEIGHT %IMG_HEIGHT%
 #define IMG_WIDTH %IMG_WIDTH%
 #define IMPLICIT %IMPLICIT%
+#define M_1_PI 0.31830988618f
+#define M_PI 3.14159265359f
+#define M_PI_2 1.57079632679f
+#define M_PI_X2 6.28318530718f
 #define MAX_ADDED_DEPTH %MAX_ADDED_DEPTH%
 #define MAX_DEPTH %MAX_DEPTH%
 #define NI_AIR 1.00028f
 #define PHONG_TESS %PHONG_TESS%
 #define PHONG_TESS_ALPHA %PHONG_TESS_ALPHA%
-#define PI_X2 6.28318530718f
 #define SAMPLES %SAMPLES%
 #define SKY_LIGHT %SKY_LIGHT%
 #define THIRD 0.3333333333f
 #define THIRD_HALF 0.1666666666f
 
+// TODO:
+// #define NUM_BVH_FACES %NUM_BVH_FACES%
+// #define NUM_BVH_NODES %NUM_BVH_NODES%
+// #define NUM_FACES %NUM_FACES%
+// #define NUM_KD_FACES %NUM_KD_FACES%
+// #define NUM_KD_LEAVES %NUM_KD_LEAVES%
+// #define NUM_KD_NONLEAVES %NUM_KD_NONLEAVES%
+
+const float INFINITY = 1.0f / 0.0f;
 
 struct ray {
 	vec3 origin;
 	vec3 dir;
 	vec3 normal;
 	float t;
+	uint faceIndex;
 };
 
 struct rayPlanes {
