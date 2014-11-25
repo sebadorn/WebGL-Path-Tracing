@@ -68,7 +68,7 @@ struct face {
 		int rightChild;
 	};
 
-// kD-tree
+// kd-tree
 #elif ACCEL_STRUCT == 1
 
 	struct bvhNode {

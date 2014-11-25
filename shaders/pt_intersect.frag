@@ -39,7 +39,7 @@ vec3 flatTriAndRayIntersect( face f, ray r, inout vec3 tuv, float tNear, float t
  * @param  {float}      tFar
  */
 vec3 checkFaceIntersection( ray r, face f, inout vec3 tuv, float tNear, float tFar ) {
-	#if PhongTess == 1
+	#if PHONG_TESS == 1
 
 		bvec3 cmp = equal( f.an, equal( f.bn, f.cn ) );
 
@@ -54,7 +54,7 @@ vec3 checkFaceIntersection( ray r, face f, inout vec3 tuv, float tNear, float tF
 
 	// Phong Tessellation
 	// Based on: "Direct Ray Tracing of Phong Tessellation" by Shinji Ogaki, Yusuke Tokuyoshi
-	#if PhongTess == 1
+	#if PHONG_TESS == 1
 
 		return phongTessTriAndRayIntersect( f, r, tuv, tNear, tFar );
 

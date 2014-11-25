@@ -2,6 +2,11 @@
 
 
 var CFG = {
+	// Acceleration structure type
+	// 0: BVH
+	// 1: kd-trees in a BVH
+	ACCEL_STRUCT: 0, // [int]
+
 	// Bounding Volume Hierarchy
 	BVH: {
 		EMERGENCY_DEPTH_LIMIT: 10, // [int]
@@ -20,12 +25,23 @@ var CFG = {
 
 	// Shader variables
 	SHADER: {
+		// Use anti-aliasing
+		ANTI_ALIASING: true, // [boolean]
+		// Bi-directional Reflection Distribution Function
+		// 0: Schlick
+		// 1: Shirley-Ashikhmin
+		BRDF: 0, // [int]
+		// Try to create implicit paths by shooting additional rays
+		// in the direction of the (main) light source
+		IMPLICIT: false, // [boolean]
+		// Max added depth if specular or glossy surfaces are hit
+		MAX_ADDED_DEPTH: 3, // [int]
 		// Max depth of rays
 		MAX_DEPTH: 3, // [int]
 		// Phong Tessellation
-		PHONG_TESSELLATION: -1.0, // [float], <= 0.0 means disabled
+		PHONG_TESSELATION: 0.5, // [float], <= 0.0 means disabled
 		// Number of samples computed per draw
-		SAMPLES: 5, // [int]
+		SAMPLES: 5 // [int]
 	},
 
 	// User interface

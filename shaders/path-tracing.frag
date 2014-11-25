@@ -1,14 +1,14 @@
-#FILE:pt_header.cl:FILE#
-#FILE:pt_utils.cl:FILE#
-#FILE:pt_spectral_precalc.cl:FILE#
-#FILE:pt_brdf.cl:FILE#
-#FILE:pt_phongtess.cl:FILE#
-#FILE:pt_intersect.cl:FILE#
+#FILE:pt_header.frag:FILE#
+#FILE:pt_utils.frag:FILE#
+#FILE:pt_spectral_precalc.frag:FILE#
+#FILE:pt_brdf.frag:FILE#
+#FILE:pt_phongtess.frag:FILE#
+#FILE:pt_intersect.frag:FILE#
 
 #if ACCEL_STRUCT == 0
-	#FILE:pt_bvh.cl:FILE#
+	#FILE:pt_bvh.frag:FILE#
 #elif ACCEL_STRUCT == 1
-	#FILE:pt_kdtree.cl:FILE#
+	#FILE:pt_kdtree.frag:FILE#
 #endif
 
 

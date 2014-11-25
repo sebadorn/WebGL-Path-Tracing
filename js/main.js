@@ -4,6 +4,8 @@
 var gl = null,
 	glAttrPointerVertex = null,
 	glBuffers = {},
+	glShaders = {},
+	glShadersFinal = {},
 	glShaderPrograms = {};
 var gHeight, gWidth;
 
@@ -30,11 +32,35 @@ function animate( elapsedTime ) {
  * Now links the programs.
  */
 function callbackShadersLoaded() {
-	var link = ["path-tracing"];
+	// Path Tracing: program
+	glShaderPrograms["path-tracing"] = gl.createProgram();
 
-	link.forEach( function( item, index, array ) {
-		gl.linkProgram( glShaderPrograms[item] );
-	} );
+	// Path Tracing: vertex shader
+	var vertexShader = gl.createShader( gl.VERTEX_SHADER );
+	gl.shaderSource( vertexShader, glShaders["path-tracing.vert"] );
+	gl.compileShader( vertexShader );
+	gl.attachShader( glShaderPrograms["path-tracing"], vertexShader );
+
+	// Path Tracing: fragment shader
+	var fragmentShader = gl.createShader( gl.FRAGMENT_SHADER );
+	var fragSource = glShaders["path-tracing.frag"];
+
+	for( var fragName in glShaders ) {
+		if( fragName.substr( -5 ) != ".frag" ) {
+			continue;
+		}
+
+		fragSource = fragSource.replace( "#FILE:" + fragName + ":FILE#", glShaders[fragName] );
+	}
+
+	fragSource = setDefineValues( fragSource );
+
+	gl.shaderSource( fragmentShader, fragSource );
+	gl.compileShader( fragmentShader );
+	gl.attachShader( glShaderPrograms["path-tracing"], fragmentShader );
+
+	// Path Tracing: link program
+	gl.linkProgram( glShaderPrograms["path-tracing"] );
 
 	initRenderTarget();
 	UI.print( "Beginning rendering ..." );
@@ -48,6 +74,28 @@ function callbackShadersLoaded() {
 			draw( 0.0 );
 		}
 	}, 1 );
+}
+
+
+function setDefineValues( fragSource ) {
+	var cl = CFG.CLEAR_COLOR;
+	var skyLight = "vec3( " + cl[0] + ", " + cl[1] + ", " + cl[2] + " )";
+
+	fragSource = fragSource.replace( '%ACCEL_STRUCT%', CFG.ACCEL_STRUCT );
+	fragSource = fragSource.replace( '%ANTI_ALIASING%', parseInt( CFG.SHADER.ANTI_ALIASING ) );
+	fragSource = fragSource.replace( '%BRDF%', CFG.SHADER.BRDF );
+	fragSource = fragSource.replace( '%BVH_STACKSIZE%', 0 ); // TODO: Get BVH depth.
+	fragSource = fragSource.replace( '%IMG_HEIGHT%', CFG.WINDOW.HEIGHT ); // TODO: Get size for fullscreen.
+	fragSource = fragSource.replace( '%IMG_WIDTH%', CFG.WINDOW.WIDTH ); // TODO: see above
+	fragSource = fragSource.replace( '%IMPLICIT%', parseInt( CFG.SHADER.IMPLICIT ) );
+	fragSource = fragSource.replace( '%MAX_ADDED_DEPTH%', CFG.SHADER.MAX_ADDED_DEPTH );
+	fragSource = fragSource.replace( '%MAX_DEPTH%', CFG.SHADER.MAX_DEPTH );
+	fragSource = fragSource.replace( '%PHONG_TESS%', ( CFG.SHADER.PHONG_TESSELATION > 0.0 ) ? 1 : 0 );
+	fragSource = fragSource.replace( '%PHONG_TESS_ALPHA%', CFG.SHADER.PHONG_TESSELATION );
+	fragSource = fragSource.replace( '%SAMPLES%', CFG.SHADER.SAMPLES );
+	fragSource = fragSource.replace( '%SKY_LIGHT%', skyLight );
+
+	return fragSource;
 }
 
 
@@ -123,7 +171,19 @@ function initWebGL( canvas ) {
  * @param {function} callback Callback function to call after having loaded all shaders.
  */
 function loadShaders( callback ) {
-	var load = ["path-tracing.vert", "path-tracing.frag"];
+	var load = [
+		// vertex shader
+		"path-tracing.vert",
+		// all parts of the fragment shader
+		"path-tracing.frag",
+		"pt_brdf.frag",
+		"pt_bvh.frag",
+		"pt_header.frag",
+		"pt_intersect.frag",
+		// "pt_kdtree.frag",
+		"pt_phongtess.frag",
+		"pt_utils.frag"
+	];
 
 	load.forEach( function( item, index, array ) {
 		var xhr = new XMLHttpRequest();
@@ -135,33 +195,8 @@ function loadShaders( callback ) {
 
 			var path = ev.target.responseURL.split( "/" );
 			var filename = path[path.length - 1].split( "." );
-			var shaderName = filename[0];
-			var shaderType = filename[1];
 
-			if( !glShaderPrograms[shaderName] ) {
-				glShaderPrograms[shaderName] = gl.createProgram();
-			}
-
-			var shader;
-
-			if( shaderType === "vert" ) {
-				shader = gl.createShader( gl.VERTEX_SHADER );
-			}
-			else if( shaderType === "frag" ) {
-				shader = gl.createShader( gl.FRAGMENT_SHADER );
-			}
-			else {
-				UI.printError( "Unknown shader type: \"" + shaderType + "\"" );
-				return;
-			}
-
-			var shaderCode = shaderSetDefines( xhr.responseText );
-
-			gl.shaderSource( shader, shaderCode );
-			gl.compileShader( shader );
-			gl.attachShader( glShaderPrograms[shaderName], shader );
-
-			UI.print( "Shader \"" + path[path.length - 1] + "\" loaded." );
+			glShaders[filename] = xhr.responseText;
 
 			if( index == array.length - 1 ) {
 				callback();
