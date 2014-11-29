@@ -1,4 +1,5 @@
 #FILE:pt_header.frag:FILE#
+#FILE:pt_data.frag:FILE#
 #FILE:pt_utils.frag:FILE#
 #FILE:pt_spectral_precalc.frag:FILE#
 #FILE:pt_brdf.frag:FILE#
@@ -20,16 +21,16 @@
  * @return {ray}
  */
 ray initRay( float pxDim, float eyeIn[12] ) {
-	vec2 pos = vec2( get_global_id( 0 ), get_global_id( 1 ) ); // TODO
+	vec2 pos = vec2( get_global_id( 0 ), get_global_id( 1 ) ); // TODO:
 
 	vec3 eye = vec3( eyeIn[0], eyeIn[1], eyeIn[2] );
 	vec3 w = vec3( eyeIn[3], eyeIn[4], eyeIn[5] );
 	vec3 u = vec3( eyeIn[6], eyeIn[7], eyeIn[8] );
 	vec3 v = vec3( eyeIn[9], eyeIn[10], eyeIn[11] );
 
-	vec3 initialRay = w + pxDim * 0.5f *
-			          ( u - IMG_WIDTH * u + 2.0f * pos.x * u +
-			            v - IMG_HEIGHT * v + 2.0f * pos.y * v );
+	vec3 initialRay = w + pxDim * 0.5 *
+			          ( u - IMG_WIDTH * u + 2.0 * pos.x * u +
+			            v - IMG_HEIGHT * v + 2.0 * pos.y * v );
 
 	ray r;
 	r.t = INFINITY;
@@ -37,7 +38,7 @@ ray initRay( float pxDim, float eyeIn[12] ) {
 	r.dir = normalize( initialRay );
 
 	float rnd = rand();
-	vec3 aaDir = jitter( r.dir, PI_X2 * rand(), sqrt( rnd ), sqrt( 1.0f - rnd ) );
+	vec3 aaDir = jitter( r.dir, PI_X2 * rand(), sqrt( rnd ), sqrt( 1.0 - rnd ) );
 	r.dir = normalize( r.dir +	aaDir * pxDim * ANTI_ALIASING );
 
 	return r;
@@ -46,30 +47,30 @@ ray initRay( float pxDim, float eyeIn[12] ) {
 
 /**
  * Write the final color to the output image.
- * @param {vec2}           pos         Pixel coordinate in the image to read from/write to.
+ * @param {vec2}                 pos         Pixel coordinate in the image to read from/write to.
  * @param {read_only image2d_t}  imageIn     The previously generated image.
  * @param {write_only image2d_t} imageOut    Output.
- * @param {float}          pixelWeight Mixing weight of the new color with the old one.
+ * @param {float}                pixelWeight Mixing weight of the new color with the old one.
  * @param {float[40]}            spdLight    Spectral power distribution reaching this pixel.
  * @param {float}                focus       Value <t> of the ray.
  */
-void setColors(
-	read_only image2d_t imageIn, write_only image2d_t imageOut,
-	float pixelWeight, float spdLight[40], float focus
-) {
-	vec2 pos = { get_global_id( 0 ), get_global_id( 1 ) };
-	sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
-	float4 imagePixel = read_imagef( imageIn, sampler, pos );
-	float4 accumulatedColor = spectrumToRGB( spdLight );
+// void setColors(
+// 	read_only image2d_t imageIn, write_only image2d_t imageOut,
+// 	float pixelWeight, float spdLight[40], float focus
+// ) {
+// 	vec2 pos = { get_global_id( 0 ), get_global_id( 1 ) };
+// 	sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
+// 	float4 imagePixel = read_imagef( imageIn, sampler, pos );
+// 	float4 accumulatedColor = spectrumToRGB( spdLight );
 
-	float4 color = mix(
-		clamp( accumulatedColor, 0.0f, 1.0f ),
-		imagePixel, pixelWeight
-	);
-	color.w = focus;
+// 	float4 color = mix(
+// 		clamp( accumulatedColor, 0.0, 1.0 ),
+// 		imagePixel, pixelWeight
+// 	);
+// 	color.w = focus;
 
-	write_imagef( imageOut, pos, color );
-}
+// 	write_imagef( imageOut, pos, color );
+// }
 
 
 /**
@@ -79,24 +80,16 @@ void setColors(
  * @param {material*}       mtl
  * @param {ray4*}           lightRay
  * @param {int}             lightRaySource
- * @param {uint*}                 secondaryPaths
+ * @param {uint*}           secondaryPaths
  * @param {constant float*} specPowerDists
- * @param {float*}                spd
- * @param {float*}                spdTotal
- * @param {float*}                maxValSpd
+ * @param {float*}          spd
+ * @param {float*}          spdTotal
  */
-void updateSPD(
-	ray4* ray, ray4* newRay, material* mtl,
-	ray4* lightRay, int lightRaySource, uint* secondaryPaths,
-	constant float* specPowerDists, float* spd, float* spdTotal, float* maxValSpd
+void updateColor(
+	ray r, ray newRay, material mtl,
+	ray lightRay, material lightMtl, uint secondaryPaths,
+	inout vec3 color, inout vec3 colorTotal
 ) {
-	#define COLOR_DIFF ( specPowerDists[index0 + i] )
-	#define COLOR_SPEC ( specPowerDists[index1 + i] )
-
-	uint index0 = mtl.spd.x * SPEC;
-	uint index1 = mtl.spd.y * SPEC;
-
-
 	// BRDF: Schlick
 	#if BRDF == 0
 
@@ -104,18 +97,14 @@ void updateSPD(
 
 		#if IMPLICIT == 1
 
-			if( lightRaySource >= 0 ) {
-				brdf = brdfSchlick( mtl, ray, lightRay, &( ray.normal ), &u, &pdf );
+			if( lightMtl.x >= 0.0 ) {
+				brdf = brdfSchlick( mtl, r, lightRay, r.normal, u, pdf );
 
-				if( fabs( pdf ) > 0.00001f ) {
-					brdf *= lambert( ray.normal, lightRay.dir );
-					brdf = native_divide( brdf, pdf );
-
-					for( int i = 0; i < SPEC; i++ ) {
-						spdTotal[i] += spd[i] * specPowerDists[lightRaySource + i] *
-						               COLOR_DIFF * ( fresnel( u, COLOR_SPEC ) * brdf *
-						               mtl.d + ( 1.0f - mtl.d ) );
-					}
+				if( abs( pdf ) > 0.00001 ) {
+					brdf *= lambert( r.normal, lightRay.dir );
+					brdf = brdf / pdf;
+					colorTotal += color * lightMtl.colorDiff * mtl.colorDiff * ( fresnel( u, mtl.colorSpec )
+					              * brdf * mtl.d + ( 1.0 - mtl.d ) );
 
 					*secondaryPaths += 1;
 				}
@@ -123,41 +112,31 @@ void updateSPD(
 
 		#endif
 
-		brdf = brdfSchlick( mtl, ray, newRay, &( ray.normal ), &u, &pdf );
-		brdf *= lambert( ray.normal, newRay.dir );
-		brdf = native_divide( brdf, pdf );
+		brdf = brdfSchlick( mtl, r, newRay, r.normal, u, pdf );
+		brdf *= lambert( r.normal, newRay.dir );
+		brdf = brdf / pdf;
 
-		for( int i = 0; i < SPEC; i++ ) {
-			spd[i] *= COLOR_DIFF * ( fresnel( u, COLOR_SPEC ) * brdf * mtl.d + ( 1.0f - mtl.d ) );
-			*maxValSpd = fmax( spd[i], *maxValSpd );
-		}
+		color *= mtl.colorDiff * ( fresnel( u, mtl.colorSpec ) * brdf * mtl.d + ( 1.0 - mtl.d ) );
 
 	// BRDF: Shirley/Ashikhmin
 	#elif BRDF == 1
 
-		float brdf_d, brdf_s, brdfDiff, brdfSpec, pdf;
+		float brdfDiff, brdfSpec, pdf;
 		float dotHK1;
+		vec3 brdf_d, brdf_s;
 
 		#if IMPLICIT == 1
 
-			if( lightRaySource >= 0 ) {
+			if( lightMtl.x >= 0.0 ) {
 				brdfShirleyAshikhmin(
 					mtl.nu, mtl.nv, mtl.Rs, mtl.Rd,
-					ray, lightRay, &( ray.normal ), &brdfSpec, &brdfDiff, &dotHK1, &pdf
+					r, lightRay, r.normal, brdfSpec, brdfDiff, dotHK1, pdf
 				);
 
-				if( fabs( pdf ) > 0.00001f ) {
-					brdfSpec = native_divide( brdfSpec, pdf );
-					brdfDiff = native_divide( brdfDiff, pdf );
-
-					for( int i = 0; i < SPEC; i++ ) {
-						brdf_s = brdfSpec * fresnel( dotHK1, mtl.Rs * COLOR_SPEC );
-						brdf_d = brdfDiff * COLOR_DIFF * ( 1.0f - mtl.Rs * COLOR_SPEC );
-
-						spdTotal[i] += spd[i] * specPowerDists[lightRaySource + i] *
-						               ( brdf_s + brdf_d ) *
-						               mtl.d + ( 1.0f - mtl.d );
-					}
+				if( abs( pdf ) > 0.00001 ) {
+					brdf_s = brdfSpec / pdf * fresnel( dotHK1, mtl.Rs * mtl.colorSpec );
+					brdf_d = brdfDiff / pdf * mtl.colorDiff * ( 1.0 - mtl.Rs * mtl.colorSpec );
+					colorTotal += color * lightMtl.colorDiff * ( brdf_s + brdf_d ) * mtl.d + ( 1.0 - mtl.d );
 
 					*secondaryPaths += 1;
 				}
@@ -167,185 +146,142 @@ void updateSPD(
 
 		brdfShirleyAshikhmin(
 			mtl.nu, mtl.nv, mtl.Rs, mtl.Rd,
-			ray, newRay, &( ray.normal ), &brdfSpec, &brdfDiff, &dotHK1, &pdf
+			r, newRay, r.normal, brdfSpec, brdfDiff, dotHK1, pdf
 		);
 
-		brdfSpec = native_divide( brdfSpec, pdf );
-		brdfDiff = native_divide( brdfDiff, pdf );
-
-		for( int i = 0; i < SPEC; i++ ) {
-			brdf_s = brdfSpec * fresnel( dotHK1, mtl.Rs * COLOR_SPEC );
-			brdf_d = brdfDiff * COLOR_DIFF * ( 1.0f - mtl.Rs * COLOR_SPEC );
-
-			spd[i] *= ( brdf_s + brdf_d ) * mtl.d + ( 1.0f - mtl.d );
-			*maxValSpd = fmax( spd[i], *maxValSpd );
-		}
+		brdf_s = brdfSpec / pdf * fresnel( dotHK1, mtl.Rs * mtl.colorSpec );
+		brdf_d = brdfDiff / pdf * mtl.colorDiff * ( 1.0 - mtl.Rs * mtl.colorSpec );
+		color *= ( brdf_s + brdf_d ) * mtl.d + ( 1.0 - mtl.d );
 
 	#endif
-
-	#undef COLOR_DIFF
-	#undef COLOR_SPEC
 }
 
 
-
-// KERNELS
-
-
 /**
- * KERNEL.
  * Do the path tracing and calculate the final color for the pixel.
  * @param {uvec2}            offset
  * @param {float}                  seed
  * @param {float}                  pixelWeight
- * @param {global face_t*}   faces
- * @param {global bvhNode*}  bvh
- * @param {global rayBase*}  initRays
- * @param {global material*} materials
- * @param {global float*}    specPowerDists
+ * @param {face_t*}   faces
+ * @param {bvhNode*}  bvh
+ * @param {rayBase*}  initRays
+ * @param {material*} materials
+ * @param {float*}    specPowerDists
  * @param {read_only image2d_t}    imageIn
  * @param {write_only image2d_t}   imageOut
  */
-kernel void pathTracing(
+void main(
 	// changing values
-	float seed,
+	float initialSeed,
 	float pixelWeight,
-	float4 sunPos,
+	vec3 sunPos,
 
 	// view
 	float pxDim,
-	global float* eyeIn,
+	float eyeIn[12],
 
-	// acceleration structure
-	#if ACCEL_STRUCT == 0
-
-		global bvhNode* bvh,
-		global uint* bvhFaces,
-
-	#elif ACCEL_STRUCT == 1
-
-		global bvhNode* bvh,
-		global kdNonLeaf* kdNonLeaves,
-		global kdLeaf* kdLeaves,
-		global uint* kdFaces,
-
-	#endif
-
-	// geometry and color related
-	global face_t* faces,
-	global material* materials,
-	constant float* specPowerDists,
-
-	// old and new frame
-	read_only image2d_t imageIn,
-	write_only image2d_t imageOut
+	// geometry and material related
+	face faces[NUM_FACES],
+	material materials[NUM_MATERIALS]
 ) {
-	float spd[SPEC], spdTotal[SPEC];
-	setArray( spdTotal, 0.0f );
+	initMod3();
+	seed = initalSeed;
+	vec3 color, colorTotal;
 
-	float focus;
 	bool addDepth;
 	uint secondaryPaths = 1; // Start at 1 instead of 0, because we are going to divide through it.
 
 	for( uint sample = 0; sample < SAMPLES; sample++ ) {
-		setArray( spd, 1.0f );
-		int light = -1;
-		ray4 ray = initRay( pxDim, eyeIn, &seed );
-		float maxValSpd = 0.0f;
+		color = vec3( 1.0 );
+		vec3 lightColor = vec3( -1.0 );
+		ray r = initRay( pxDim, eyeIn );
+		float maxValSpd = 0.0;
 		int depthAdded = 0;
 
 		for( uint depth = 0; depth < MAX_DEPTH + depthAdded; depth++ ) {
 			CALL_TRAVERSE
 
-			if( ray.t == INFINITY ) {
-				light = SKY_LIGHT * SPEC;
+			if( r.t == INFINITY ) {
+				lightColor = SKY_LIGHT;
 				break;
 			}
 
-			focus = ( depth == 0 ) ? ray.t : focus;
-
-			material mtl = materials[(uint) faces[(uint) ray.normal.w].a.w];
-			ray.normal.w = 0.0f;
+			material mtl = materials[faces[r.faceIndex].material];
 
 			// Implicit connection to a light found
 			if( mtl.light == 1 ) {
-				light = mtl.spd.x * SPEC;
+				lightColor = mtl.colorDiff;
 				break;
 			}
 
 			// Last round, no need to calculate a new ray.
 			// Unless we hit a material that extends the path.
-			addDepth = extendDepth( &mtl, &seed );
+			addDepth = extendDepth( mtl );
 
-			if( mtl.d == 1.0f && !addDepth && depth == MAX_DEPTH + depthAdded - 1 ) {
+			if( mtl.d == 1.0 && !addDepth && depth == MAX_DEPTH + depthAdded - 1 ) {
 				break;
 			}
 
-			seed += ray.t;
+			// seed += r.t;
 
-			int lightRaySource = -1;
-			ray4 lightRay;
+			vec3 lightRaySource = vec3( -1.0 );
+			ray lightRay;
 			lightRay.t = INFINITY;
 
 			#if IMPLICIT == 1
 
-				if( mtl.d > 0.0f ) {
-					lightRay.origin = fma( ray.t, ray.dir, ray.origin ) + ray.normal * EPSILON5;
-					float rnd2 = rand( &seed );
+				if( mtl.d > 0.0 ) {
+					lightRay.origin = r.t * r.dir + r.origin + r.normal * EPSILON;
+					float rnd2 = rand();
 					lightRay.dir = normalize( sunPos - lightRay.origin );
 
 					CALL_TRAVERSE_SHADOW
 
 					if( lightRay.t == INFINITY ) {
-						lightRaySource = SKY_LIGHT * SPEC;
+						lightRaySource = SKY_LIGHT;
 					}
 					else {
-						material lightMTL = materials[(uint) faces[(uint) lightRay.normal.w].a.w];
-						lightRaySource = ( lightMTL.light == 1 ) ? lightMTL.spd.x : -1;
+						material lightMTL = materials[faces[lightRay.faceIndex].material];
+						lightRaySource = lightMTL.isLight ? lightMTL.color : vec3( -1.0 );
 					}
-
-					lightRay.normal.w = 0.0f;
 				}
 
 			#endif
 
-			// New direction of the ray (bouncing of the hit surface)
-			ray4 newRay = getNewRay( &ray, &mtl, &seed, &addDepth );
+			// New direction of the ray (bouncing off the hit surface)
+			ray newRay = getNewRay( r, mtl, addDepth );
 
-			updateSPD(
-				&ray, &newRay, &mtl, &lightRay, lightRaySource, &secondaryPaths,
-				specPowerDists, spd, spdTotal, &maxValSpd
+			updateColor(
+				r, newRay, mtl, lightRay, lightRaySource, secondaryPaths,
+				color, colorTotal
 			);
 
 			// Extend max path depth
 			depthAdded += ( addDepth && depthAdded < MAX_ADDED_DEPTH );
 
-			// Russian roulette termination
-			if( depth > 2 + depthAdded && maxValSpd < rand( &seed ) ) {
-				break;
-			}
+			// TODO:
+			// // Russian roulette termination
+			// if( depth > 2 + depthAdded && maxValSpd < rand() ) {
+			// 	break;
+			// }
 
-			ray = newRay;
+			r = newRay;
 		} // end bounces
 
-		if( light >= 0 ) {
-			for( int i = 0; i < SPEC; i++ ) {
-				spdTotal[i] += spd[i] * specPowerDists[light + i];
-			}
+		if( lightColor.x >= 0.0 ) {
+			colorTotal += color * lightColor;
 		}
 	} // end samples
 
-	for( int i = 0; i < SPEC; i++ ) {
-		spdTotal[i] = native_divide( spdTotal[i], (float) secondaryPaths );
-	}
+
+	colorTotal /= (float) secondaryPaths;
 
 	#if SAMPLES > 1
 
-		for( int i = 0; i < SPEC; i++ ) {
-			spdTotal[i] = native_divide( spdTotal[i], (float) SAMPLES );
-		}
+		colorTotal /= (float) SAMPLES;
 
 	#endif
 
-	setColors( imageIn, imageOut, pixelWeight, spdTotal, focus );
+	// setColors( imageIn, imageOut, pixelWeight, spdTotal, focus );
+	gl_FragColor = vec4( colorTotal, 1.0 );
 }

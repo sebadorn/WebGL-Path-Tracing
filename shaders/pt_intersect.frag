@@ -13,20 +13,20 @@ vec3 flatTriAndRayIntersect( face f, ray r, inout vec3 tuv, float tNear, float t
 	vec3 tVec = r.origin - f.a;
 	vec3 pVec = cross( r.dir, edge2 );
 	vec3 qVec = cross( tVec, edge1 );
-	float invDet = 1.0f / dot( edge1, pVec );
+	float invDet = 1.0 / dot( edge1, pVec );
 
 	tuv.x = dot( edge2, qVec ) * invDet;
 
 	if( tuv.x < EPSILON || max( tuv.x - tFar, tNear - tuv.x ) > EPSILON ) {
 		tuv.x = INFINITY;
-		return vec3( 0.0f );
+		return vec3( 0.0 );
 	}
 
 	tuv.y = dot( tVec, pVec ) * invDet;
 	tuv.z = dot( r.dir, qVec ) * invDet;
-	tuv.x = ( min( tuv.y, tuv.z ) < 0.0f || tuv.y > 1.0f || tuv.y + tuv.z > 1.0f ) ? INFINITY : tuv.x;
+	tuv.x = ( min( tuv.y, tuv.z ) < 0.0 || tuv.y > 1.0 || tuv.y + tuv.z > 1.0 ) ? INFINITY : tuv.x;
 
-	return getTriangleNormal( f, 1.0f - tuv.y - tuv.z, tuv.y, tuv.z );
+	return getTriangleNormal( f, 1.0 - tuv.y - tuv.z, tuv.y, tuv.z );
 }
 
 
@@ -103,7 +103,7 @@ bool intersectSphere(
 	float b = dot( op, r.dir );
 	float det = b * b - dot( op, op ) + radius * radius;
 
-	if( det < 0.0f ) {
+	if( det < 0.0 ) {
 		return false;
 	}
 
@@ -111,5 +111,5 @@ bool intersectSphere(
 	tNear = b - det;
 	tFar = b + det;
 
-	return ( max( tNear, tFar ) > 0.0f );
+	return ( max( tNear, tFar ) > 0.0 );
 }

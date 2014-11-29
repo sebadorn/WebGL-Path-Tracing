@@ -127,5 +127,5 @@ function main() {
 	}
 
 	window.addEventListener( "resize", UI.resize );
-	ShaderLoader.load( start );
+	ShaderLoader.setCallback( start );
 }

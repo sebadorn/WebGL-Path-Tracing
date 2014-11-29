@@ -4,6 +4,7 @@
 var ShaderLoader = {
 
 
+	_callback: null,
 	_programs: {},
 	_sources: {},
 
@@ -17,7 +18,7 @@ var ShaderLoader = {
 
 		// Path Tracing: vertex shader
 		var vertexShader = gl.createShader( gl.VERTEX_SHADER );
-		gl.shaderSource( vertexShader, glShaders["path-tracing.vert"] );
+		gl.shaderSource( vertexShader, this._sources["path-tracing.vert"] );
 		gl.compileShader( vertexShader );
 		gl.attachShader( this._programs["path-tracing"], vertexShader );
 
@@ -30,7 +31,7 @@ var ShaderLoader = {
 				continue;
 			}
 
-			fragSource = fragSource.replace( "#FILE:" + fragName + ":FILE#", glShaders[fragName] );
+			fragSource = fragSource.replace( "#FILE:" + fragName + ":FILE#", this._sources[fragName] );
 		}
 
 		fragSource = this._setDefineValues( fragSource );
@@ -52,22 +53,34 @@ var ShaderLoader = {
 	 * @return {String}        The source code with replacements.
 	 */
 	_setDefineValues: function( source ) {
+		var acc = SceneManager.getAccStructData();
+		var data = SceneManager.getBVHShaderData();
 		var cl = CFG.CLEAR_COLOR;
 		var skyLight = "vec3( " + cl[0] + ", " + cl[1] + ", " + cl[2] + " )";
 
-		source = source.replace( '%ACCEL_STRUCT%', CFG.ACCEL_STRUCT );
-		source = source.replace( '%ANTI_ALIASING%', parseInt( CFG.SHADER.ANTI_ALIASING ) );
-		source = source.replace( '%BRDF%', CFG.SHADER.BRDF );
-		source = source.replace( '%BVH_STACKSIZE%', 0 ); // TODO: Get BVH depth.
-		source = source.replace( '%IMG_HEIGHT%', gHeight );
-		source = source.replace( '%IMG_WIDTH%', gWidth );
-		source = source.replace( '%IMPLICIT%', parseInt( CFG.SHADER.IMPLICIT ) );
-		source = source.replace( '%MAX_ADDED_DEPTH%', CFG.SHADER.MAX_ADDED_DEPTH );
-		source = source.replace( '%MAX_DEPTH%', CFG.SHADER.MAX_DEPTH );
-		source = source.replace( '%PHONG_TESS%', ( CFG.SHADER.PHONG_TESSELATION > 0.0 ) ? 1 : 0 );
-		source = source.replace( '%PHONG_TESS_ALPHA%', CFG.SHADER.PHONG_TESSELATION );
-		source = source.replace( '%SAMPLES%', CFG.SHADER.SAMPLES );
-		source = source.replace( '%SKY_LIGHT%', skyLight );
+		source = source.replace( "%ACCEL_STRUCT%", CFG.ACCEL_STRUCT );
+		source = source.replace( "%ANTI_ALIASING%", parseInt( CFG.SHADER.ANTI_ALIASING ) );
+		source = source.replace( "%BRDF%", CFG.SHADER.BRDF );
+		source = source.replace( "%BVH_STACKSIZE%", acc.bvh.depth );
+		source = source.replace( "%IMG_HEIGHT%", gHeight );
+		source = source.replace( "%IMG_WIDTH%", gWidth );
+		source = source.replace( "%IMPLICIT%", parseInt( CFG.SHADER.IMPLICIT ) );
+		source = source.replace( "%MAX_ADDED_DEPTH%", CFG.SHADER.MAX_ADDED_DEPTH );
+		source = source.replace( "%MAX_DEPTH%", CFG.SHADER.MAX_DEPTH );
+		source = source.replace( "%NUM_BVH_FACES%", acc.bvh.numFaces );
+		source = source.replace( "%NUM_BVH_NODES%", acc.bvh.numNodes );
+		source = source.replace( "%NUM_FACES%", acc.numFaces );
+		// source = source.replace( "%NUM_KD_FACES%", ); // TODO:
+		// source = source.replace( "%NUM_KD_LEAVES%", ); // TODO:
+		// source = source.replace( "%NUM_KD_NONLEAVES%", ); // TODO:
+		source = source.replace( "%NUM_MATERIALS", acc.numMaterials );
+		source = source.replace( "%PHONG_TESS%", ( CFG.SHADER.PHONG_TESSELATION > 0.0 ) ? 1 : 0 );
+		source = source.replace( "%PHONG_TESS_ALPHA%", CFG.SHADER.PHONG_TESSELATION );
+		source = source.replace( "%SAMPLES%", CFG.SHADER.SAMPLES );
+		source = source.replace( "%SKY_LIGHT%", skyLight );
+
+		source = source.replace( "%DATA_BVH_FACES%", data.faces );
+		source = source.replace( "%DATA_BVH_NODES%", data.nodes );
 
 		return source;
 	},
@@ -85,12 +98,8 @@ var ShaderLoader = {
 
 	/**
 	 * Load the shaders.
-	 * @callback callback Function to call after shaders have been loaded and
-	 *                    the program has been built.
 	 */
-	load: function( callback ) {
-		this._callback = callback;
-
+	load: function() {
 		var load = [
 			// vertex shader
 			"path-tracing.vert",
@@ -98,6 +107,7 @@ var ShaderLoader = {
 			"path-tracing.frag",
 			"pt_brdf.frag",
 			"pt_bvh.frag",
+			"pt_data.frag",
 			"pt_header.frag",
 			"pt_intersect.frag",
 			"pt_kdtree.frag",
@@ -114,12 +124,12 @@ var ShaderLoader = {
 				}
 
 				var path = ev.target.responseURL.split( "/" );
-				var filename = path[path.length - 1].split( "." );
+				var filename = path[path.length - 1];
 
-				this._source[filename] = xhr.responseText;
+				ShaderLoader._sources[filename] = xhr.responseText;
 
 				if( index == array.length - 1 ) {
-					this._buildProgram();
+					ShaderLoader._buildProgram();
 				}
 			};
 
@@ -131,6 +141,16 @@ var ShaderLoader = {
 			xhr.open( "GET", "shaders/" + item, true );
 			xhr.send( null );
 		} );
+	},
+
+
+	/**
+	 * Set a callback to use after shaders have been built.
+	 * @param {Function} fn Function to call after shaders have been
+	 *                      loaded an the program has been built.
+	 */
+	setCallback: function( fn ) {
+		this._callback = fn;
 	}
 
 };

@@ -72,10 +72,10 @@ int goToLeafNode( uint nodeIndex, kdNonLeaf kdNonLeaves[NUM_KD_NONLEAVES], vec3 
 void updateEntryDistanceAndExitRope(
 	ray r, vec3 bbMin, vec3 bbMax, inout float tFar, out int exitRope
 ) {
-	vec3 invDir = 1.0f / r.dir;
-	bool signX = ( invDir.x < 0.0f );
-	bool signY = ( invDir.y < 0.0f );
-	bool signZ = ( invDir.z < 0.0f );
+	vec3 invDir = 1.0 / r.dir;
+	bool signX = ( invDir.x < 0.0 );
+	bool signY = ( invDir.y < 0.0 );
+	bool signZ = ( invDir.z < 0.0 );
 
 	vec3 t1 = ( bbMin - r.origin ) * invDir;
 	vec3 tMax = ( bbMax - r.origin ) * invDir;
@@ -157,7 +157,7 @@ void traverse(
 
 	while( stackIndex >= 0 ) {
 		bvhNode node = bvh[bvhStack[stackIndex--]];
-		float tNearL = 0.0f;
+		float tNearL = 0.0;
 		float tFarL = INFINITY;
 
 		int leftChildIndex = node.leftChild;
@@ -188,7 +188,7 @@ void traverse(
 			r.t > tNearL
 		);
 
-		float tNearR = 0.0f;
+		float tNearR = 0.0;
 		float tFarR = INFINITY;
 		childNode = bvh[node.rightChild - 1];
 

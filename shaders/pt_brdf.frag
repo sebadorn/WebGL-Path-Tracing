@@ -9,8 +9,8 @@
 	 * @return {float}
 	 */
 	float Z( float t, float r ) {
-		float x = 1.0f + r * t * t - t * t;
-		return ( x == 0.0f ) ? 0.0f : r / ( x * x );
+		float x = 1.0 + r * t * t - t * t;
+		return ( x == 0.0 ) ? 0.0 : r / ( x * x );
 	}
 
 
@@ -24,7 +24,7 @@
 		float p2 = p * p;
 		float w2 = w * w;
 		float x = p2 - p2 * w2 + w2;
-		return ( x == 0.0f ) ? 0.0f : sqrt( p / x );
+		return ( x == 0.0 ) ? 0.0 : sqrt( p / x );
 	}
 
 
@@ -36,7 +36,7 @@
 	 */
 	float G( float v, float r ) {
 		float x = r - r * v + v;
-		return ( x == 0.0f ) ? 0.0f : v / x;
+		return ( x == 0.0 ) ? 0.0 : v / x;
 	}
 
 
@@ -68,7 +68,7 @@
 	float B2( float t, float vOut, float vIn, float w, float r, float p ) {
 		float gp = G( vOut, r ) * G( vIn, r );
 		float obstructed = gp * Z( t, r ) * A( w, p );
-		float reemission = 1.0f - gp;
+		float reemission = 1.0 - gp;
 
 		return obstructed + reemission;
 	}
@@ -85,15 +85,15 @@
 	 * @return {float}
 	 */
 	float D( float t, float vOut, float vIn, float w, float r, float p ) {
-		float b = 4.0f * r * ( 1.0f - r );
-		float a = ( r < 0.5f ) ? 0.0f : 1.0f - b;
-		float c = ( r < 0.5f ) ? 1.0f - b : 0.0f;
+		float b = 4.0 * r * ( 1.0 - r );
+		float a = ( r < 0.5 ) ? 0.0 : 1.0 - b;
+		float c = ( r < 0.5 ) ? 1.0 - b : 0.0;
 
-		float d = 4.0f * M_PI * vOut * vIn;
+		float d = 4.0 * M_PI * vOut * vIn;
 
 		float lam = a * M_1_PI;
-		float ani = ( b == 0.0f || d == 0.0f ) ? 0.0f : b / d * B2( t, vOut, vIn, w, r, p );
-		float fres = ( vIn == 0.0f ) ? 0.0f : c / vIn;
+		float ani = ( b == 0.0 || d == 0.0 ) ? 0.0 : b / d * B2( t, vOut, vIn, w, r, p );
+		float fres = ( vIn == 0.0 ) ? 0.0 : c / vIn;
 
 		return lam + ani + fres;
 	}
@@ -127,7 +127,7 @@
 		float w = dot( un, hp );
 
 		u = dot( h, V_OUT );
-		pdf = t / ( 4.0f * M_PI * dot( V_OUT, h ) );
+		pdf = t / ( 4.0 * M_PI * dot( V_OUT, h ) );
 
 		return D( t, vOut, vIn, w, mtl.rough, mtl.p );
 
@@ -145,7 +145,7 @@
 	vec3 newRaySchlick( ray r, material mtl ) {
 		vec3 newRay;
 
-		if( mtl.rough == 0.0f ) {
+		if( mtl.rough == 0.0 ) {
 			return reflect( DIR, N );
 		}
 
@@ -155,39 +155,39 @@
 		float alpha = acos( sqrt( a / ( mtl.rough - a * mtl.rough + a ) ) );
 		float phi;
 
-		if( b < 0.25f ) {
-			b = 1.0f - 4.0f * ( 0.25f - b );
+		if( b < 0.25 ) {
+			b = 1.0 - 4.0 * ( 0.25 - b );
 			float b2 = b * b;
-			phi = M_PI_2 * sqrt( ( iso2 * b2 ) / ( 1.0f - b2 + b2 * iso2 ) );
+			phi = M_PI_2 * sqrt( ( iso2 * b2 ) / ( 1.0 - b2 + b2 * iso2 ) );
 		}
-		else if( b < 0.5f ) {
-			b = 1.0f - 4.0f * ( 0.5f - b );
+		else if( b < 0.5 ) {
+			b = 1.0 - 4.0 * ( 0.5 - b );
 			float b2 = b * b;
-			phi = M_PI_2 * sqrt( ( iso2 * b2 ) / ( 1.0f - b2 + b2 * iso2 ) );
+			phi = M_PI_2 * sqrt( ( iso2 * b2 ) / ( 1.0 - b2 + b2 * iso2 ) );
 			phi = M_PI - phi;
 		}
-		else if( b < 0.75f ) {
-			b = 1.0f - 4.0f * ( 0.75f - b );
+		else if( b < 0.75 ) {
+			b = 1.0 - 4.0 * ( 0.75 - b );
 			float b2 = b * b;
-			phi = M_PI_2 * sqrt( ( iso2 * b2 ) / ( 1.0f - b2 + b2 * iso2 ) );
+			phi = M_PI_2 * sqrt( ( iso2 * b2 ) / ( 1.0 - b2 + b2 * iso2 ) );
 			phi = M_PI + phi;
 		}
 		else {
-			b = 1.0f - 4.0f * ( 1.0f - b );
+			b = 1.0 - 4.0 * ( 1.0 - b );
 			float b2 = b * b;
-			phi = M_PI_2 * sqrt( ( iso2 * b2 ) / ( 1.0f - b2 + b2 * iso2 ) );
-			phi = 2.0f * M_PI - phi;
+			phi = M_PI_2 * sqrt( ( iso2 * b2 ) / ( 1.0 - b2 + b2 * iso2 ) );
+			phi = 2.0 * M_PI - phi;
 		}
 
-		if( mtl.p < 1.0f ) {
+		if( mtl.p < 1.0 ) {
 			phi += M_PI_2;
 		}
 
 		vec3 H = jitter( N, phi, sin( alpha ), cos( alpha ) );
 		newRay = reflect( DIR, H );
 
-		if( dot( newRay, N ) <= 0.0f ) {
-			newRay = jitter( N, PI_X2 * rand() * 2.0f, sqrt( a ), sqrt( 1.0f - a ) );
+		if( dot( newRay, N ) <= 0.0 ) {
+			newRay = jitter( N, PI_X2 * rand() * 2.0, sqrt( a ), sqrt( 1.0 - a ) );
 		}
 
 		return newRay;
@@ -235,17 +235,17 @@
 
 		// Specular
 		float ps_e = nu * dotHU * dotHU + nv * dotHV * dotHV;
-		ps_e = ( dotHN == 1.0f ) ? 0.0f : ps_e / ( 1.0f - dotHN * dotHN );
-		float ps0 = sqrt( ( nu + 1.0f ) * ( nv + 1.0f ) ) * 0.125f * M_1_PI;
+		ps_e = ( dotHN == 1.0 ) ? 0.0 : ps_e / ( 1.0 - dotHN * dotHN );
+		float ps0 = sqrt( ( nu + 1.0 ) * ( nv + 1.0 ) ) * 0.125 * M_1_PI;
 		float ps1_num = pow( dotHN, ps_e );
 		float ps1 = ps1_num / ( dotHK1 * max( dotNK1, dotNK2 ) );
 
 		// Diffuse
-		float pd = Rd * 0.38750768752f; // M_1_PI * 28.0f / 23.0f;
-		float a = 1.0f - dotNK1 * 0.5f;
-		float b = 1.0f - dotNK2 * 0.5f;
-		pd *= 1.0f - a * a * a * a * a;
-		pd *= 1.0f - b * b * b * b * b;
+		float pd = Rd * 0.38750768752; // M_1_PI * 28.0 / 23.0;
+		float a = 1.0 - dotNK1 * 0.5;
+		float b = 1.0 - dotNK2 * 0.5;
+		pd *= 1.0 - a * a * a * a * a;
+		pd *= 1.0 - b * b * b * b * b;
 
 		brdfSpec = ps0 * ps1;
 		brdfDiff = pd;
@@ -264,53 +264,53 @@
 	 */
 	vec3 newRayShirleyAshikhmin( ray r, material mtl ) {
 		// // Just do it perfectly specular at such high and identical lobe values
-		// if( mtl.nu == mtl.nv && mtl.nu >= 100000.0f ) {
+		// if( mtl.nu == mtl.nv && mtl.nu >= 100000.0 ) {
 		// 	return reflect( r.dir, r.normal );
 		// }
 
 		float a = rand();
 		float b = rand();
 		float phi_flip = M_PI;
-		float phi_flipf = 1.0f;
-		float aMax = 1.0f;
+		float phi_flipf = 1.0;
+		float aMax = 1.0;
 
-		if( a < 0.25f ) {
-			aMax = 0.25f;
-			phi_flip = 0.0f;
+		if( a < 0.25 ) {
+			aMax = 0.25;
+			phi_flip = 0.0;
 		}
-		else if( a < 0.5f ) {
-			aMax = 0.5f;
-			phi_flipf = -1.0f;
+		else if( a < 0.5 ) {
+			aMax = 0.5;
+			phi_flipf = -1.0;
 		}
-		else if( a < 0.75f ) {
-			aMax = 0.75f;
+		else if( a < 0.75 ) {
+			aMax = 0.75;
 		}
 		else {
-			phi_flip = 2.0f * M_PI;
-			phi_flipf = -1.0f;
+			phi_flip = 2.0 * M_PI;
+			phi_flipf = -1.0;
 		}
 
-		a = 1.0f - 4.0f * ( aMax - a );
+		a = 1.0 - 4.0 * ( aMax - a );
 
 		float phi = atan(
-			sqrt( ( mtl.nu + 1.0f ) / ( mtl.nv + 1.0f ) ) * tan( M_PI_2 * a )
+			sqrt( ( mtl.nu + 1.0 ) / ( mtl.nv + 1.0 ) ) * tan( M_PI_2 * a )
 		);
 		float phi_full = phi_flip + phi_flipf * phi;
 
 		float cosphi = cos( phi );
 		float sinphi = sin( phi );
-		float theta_e = 1.0f / ( mtl.nu * cosphi * cosphi + mtl.nv * sinphi * sinphi + 1.0f );
-		float theta = acos( pow( 1.0f - b, theta_e ) );
+		float theta_e = 1.0 / ( mtl.nu * cosphi * cosphi + mtl.nv * sinphi * sinphi + 1.0 );
+		float theta = acos( pow( 1.0 - b, theta_e ) );
 
-		vec3 normal = ( mtl.d < 1.0f || dot( r.normal, -r.dir ) >= 0.0f ) ? r.normal : -r.normal;
+		vec3 normal = ( mtl.d < 1.0 || dot( r.normal, -r.dir ) >= 0.0 ) ? r.normal : -r.normal;
 
 		vec3 h = jitter( normal, phi_full, sin( theta ), cos( theta ) );
 		vec3 spec = reflect( r.dir, h );
-		vec3 diff = jitter( normal, 2.0f * M_PI * rand(), sqrt( b ), sqrt( 1.0f - b ) );
+		vec3 diff = jitter( normal, 2.0 * M_PI * rand(), sqrt( b ), sqrt( 1.0 - b ) );
 
 		// If new ray direction points under the hemisphere,
 		// use a cosine-weighted sample instead.
-		vec3 newRay = ( dot( spec, normal ) <= 0.0f ) ? diff : spec;
+		vec3 newRay = ( dot( spec, normal ) <= 0.0 ) ? diff : spec;
 
 		return newRay;
 	}
@@ -333,7 +333,7 @@ ray getNewRay( ray r, material mtl, inout bool addDepth ) {
 	// newRay.origin += r.normal * EPSILON7;
 
 	// Transparency and refraction
-	bool doTransRefr = ( mtl.d < 1.0f && mtl.d <= rand() );
+	bool doTransRefr = ( mtl.d < 1.0 && mtl.d <= rand() );
 
 	addDepth = ( addDepth || doTransRefr );
 

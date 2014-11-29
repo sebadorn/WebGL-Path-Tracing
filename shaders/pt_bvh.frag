@@ -50,11 +50,11 @@ void traverse(
 	int stackIndex = 0;
 	bvhStack[stackIndex] = 0; // Node 0 is always the BVH root node
 
-	vec3 invDir = 1.0f / r.dir;
+	vec3 invDir = 1.0 / r.dir;
 
 	while( stackIndex >= 0 ) {
 		bvhNode node = bvh[bvhStack[stackIndex--]];
-		float tNearL = 0.0f;
+		float tNearL = 0.0;
 		float tFarL = INFINITY;
 
 		// Is a leaf node
@@ -79,7 +79,7 @@ void traverse(
 			r.t > tNearL
 		);
 
-		float tNearR = 0.0f;
+		float tNearR = 0.0;
 		float tFarR = INFINITY;
 		childNode = bvh[node.rightChild];
 
@@ -128,11 +128,11 @@ void traverse_shadows(
 	int stackIndex = 0;
 	bvhStack[stackIndex] = 0; // Node 0 is always the BVH root node
 
-	vec3 invDir = 1.0f / r.dir;
+	vec3 invDir = 1.0 / r.dir;
 
 	while( stackIndex >= 0 ) {
 		bvhNode node = bvh[bvhStack[stackIndex--]];
-		tNearL = 0.0f;
+		tNearL = 0.0;
 		tFarL = INFINITY;
 
 		// Is a leaf node with faces
@@ -154,7 +154,7 @@ void traverse_shadows(
 
 		bool addLeftToStack = intersectBox( r, invDir, childNode.bbMin, childNode.bbMax, tNearL, tFarL );
 
-		float tNearR = 0.0f;
+		float tNearR = 0.0;
 		float tFarR = INFINITY;
 		childNode = bvh[node.rightChild];
 

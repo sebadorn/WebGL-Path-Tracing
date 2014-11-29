@@ -1,41 +1,47 @@
+#if GL_FRAGMENT_PRECISION_HIGH == 1
+	precision highp float;
+#else
+	precision mediump float;
+#endif
+
 #define ACCEL_STRUCT %ACCEL_STRUCT%
 #define ANTI_ALIASING %ANTI_ALIASING%
 #define BRDF %BRDF%
 #define BVH_STACKSIZE %BVH_STACKSIZE%
-#define EPSILON 0.00001f
+#define EPSILON 0.00001
 #define IMG_HEIGHT %IMG_HEIGHT%
 #define IMG_WIDTH %IMG_WIDTH%
 #define IMPLICIT %IMPLICIT%
-#define M_1_PI 0.31830988618f
-#define M_PI 3.14159265359f
-#define M_PI_2 1.57079632679f
-#define M_PI_X2 6.28318530718f
+#define M_1_PI 0.31830988618
+#define M_PI 3.14159265359
+#define M_PI_2 1.57079632679
+#define M_PI_X2 6.28318530718
 #define MAX_ADDED_DEPTH %MAX_ADDED_DEPTH%
 #define MAX_DEPTH %MAX_DEPTH%
-#define NI_AIR 1.00028f
+#define NI_AIR 1.00028
+#define NUM_BVH_FACES %NUM_BVH_FACES%
+#define NUM_BVH_NODES %NUM_BVH_NODES%
+#define NUM_FACES %NUM_FACES%
+// #define NUM_KD_FACES %NUM_KD_FACES%
+// #define NUM_KD_LEAVES %NUM_KD_LEAVES%
+// #define NUM_KD_NONLEAVES %NUM_KD_NONLEAVES%
+#define NUM_MATERIALS %NUM_MATERIALS%
 #define PHONG_TESS %PHONG_TESS%
 #define PHONG_TESS_ALPHA %PHONG_TESS_ALPHA%
 #define SAMPLES %SAMPLES%
 #define SKY_LIGHT %SKY_LIGHT%
-#define THIRD 0.3333333333f
-#define THIRD_HALF 0.1666666666f
+#define THIRD 0.3333333333
+#define THIRD_HALF 0.1666666666
 
-// TODO:
-// #define NUM_BVH_FACES %NUM_BVH_FACES%
-// #define NUM_BVH_NODES %NUM_BVH_NODES%
-// #define NUM_FACES %NUM_FACES%
-// #define NUM_KD_FACES %NUM_KD_FACES%
-// #define NUM_KD_LEAVES %NUM_KD_LEAVES%
-// #define NUM_KD_NONLEAVES %NUM_KD_NONLEAVES%
 
-const float INFINITY = 1.0f / 0.0f;
+const float INFINITY = 1.0 / 0.0;
 
 struct ray {
 	vec3 origin;
 	vec3 dir;
 	vec3 normal;
 	float t;
-	uint faceIndex;
+	int faceIndex;
 };
 
 struct rayPlanes {
@@ -82,7 +88,7 @@ struct face {
 		ivec2 children; // [left, right]
 		bvec2 isLeaf; // [isLeftLeaf, isRightLeaf]
 		float split;
-		uint axis;
+		int axis;
 	};
 
 	struct kdLeaf {
@@ -119,7 +125,8 @@ struct face {
 		float Rd;
 		float d;
 		float Ni;
-		vec3 color;
+		vec3 colorDiff;
+		vec3 colorSpec;
 		bool isLight;
 	};
 

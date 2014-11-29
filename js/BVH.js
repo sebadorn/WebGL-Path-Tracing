@@ -1,6 +1,10 @@
 "use strict";
 
 
+/**
+ * A node in the BVH.
+ * @constructor
+ */
 var BVHNode = function() {
 	this.leftChild = null;
 	this.rightChild = null;
@@ -14,9 +18,9 @@ var BVHNode = function() {
 
 /**
  * Constructor.
- * @param {array<Object3D>} objects
- * @param {array<float>}    vertices
- * @param {array<float>}    normals
+ * @param {Array<Object3D>} objects
+ * @param {Array<float>}    vertices
+ * @param {Array<float>}    normals
  */
 var BVH = function( objects, vertices, normals ) {
 	this.containerNodes = [];
@@ -33,7 +37,7 @@ var BVH = function( objects, vertices, normals ) {
 
 /**
  *
- * @param  {array<Tri>} faces
+ * @param  {Array<Tri>} faces
  * @param  {THREE.Box3} bb
  * @param  {int}        depth
  * @param  {boolean}    useGivenBB

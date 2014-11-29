@@ -22,7 +22,7 @@ vec3 phongTessellation(
 			v * projectOnPlane( pBary, P2, N2 ) +
 			w * projectOnPlane( pBary, P3, N3 );
 
-	return ( 1.0f - PHONG_TESS_ALPHA ) * pBary + PHONG_TESS_ALPHA * pTessellated;
+	return ( 1.0 - PHONG_TESS_ALPHA ) * pBary + PHONG_TESS_ALPHA * pTessellated;
 }
 
 
@@ -63,7 +63,7 @@ vec3 phongTessTriAndRayIntersect(
 	#define N2 ( f.bn )
 	#define N3 ( f.cn )
 
-	vec3 normal = vec3( 0.0f );
+	vec3 normal = vec3( 0.0 );
 	tuv.x = INFINITY;
 
 	vec3 E01 = P2 - P1;
@@ -82,30 +82,30 @@ vec3 phongTessTriAndRayIntersect(
 		a = dot( -rp.n1, C3 );
 		b = dot( -rp.n1, C2 );
 		c = dot( rp.n1, P3 ) - rp.o1;
-		d = dot( rp.n1, C1 - C2 - C3 ) * 0.5f;
-		e = dot( rp.n1, C3 + E20 ) * 0.5f;
-		f = dot( rp.n1, C2 - E12 ) * 0.5f;
+		d = dot( rp.n1, C1 - C2 - C3 ) * 0.5;
+		e = dot( rp.n1, C3 + E20 ) * 0.5;
+		f = dot( rp.n1, C2 - E12 ) * 0.5;
 		l = dot( -rp.n2, C3 );
 		m = dot( -rp.n2, C2 );
 		n = dot( rp.n2, P3 ) - rp.o2;
-		o = dot( rp.n2, C1 - C2 - C3 ) * 0.5f;
-		p = dot( rp.n2, C3 + E20 ) * 0.5f;
-		q = dot( rp.n2, C2 - E12 ) * 0.5f;
+		o = dot( rp.n2, C1 - C2 - C3 ) * 0.5;
+		p = dot( rp.n2, C3 + E20 ) * 0.5;
+		q = dot( rp.n2, C2 - E12 ) * 0.5;
 	}
 
 
 	// Solve cubic
 
-	float xs[3] = float[3]( -1.0f, -1.0f, -1.0f );
+	float xs[3] = float[3]( -1.0, -1.0, -1.0 );
 	int numCubicRoots = 0;
 
 	{
-		float a3 = ( l*m*n + 2.0f*o*p*q ) - ( l*q*q + m*p*p + n*o*o );
-		float a2 = ( a*m*n + l*b*n + l*m*c + 2.0f*( d*p*q + o*e*q + o*p*f ) ) -
-		           ( a*q*q + b*p*p + c*o*o + 2.0f*( l*f*q + m*e*p + n*d*o ) );
-		float a1 = ( a*b*n + a*m*c + l*b*c + 2.0f*( o*e*f + d*e*q + d*p*f ) ) -
-		           ( l*f*f + m*e*e + n*d*d + 2.0f*( a*f*q + b*e*p + c*d*o ) );
-		float a0 = ( a*b*c + 2.0f*d*e*f ) - ( a*f*f + b*e*e + c*d*d );
+		float a3 = ( l*m*n + 2.0*o*p*q ) - ( l*q*q + m*p*p + n*o*o );
+		float a2 = ( a*m*n + l*b*n + l*m*c + 2.0*( d*p*q + o*e*q + o*p*f ) ) -
+		           ( a*q*q + b*p*p + c*o*o + 2.0*( l*f*q + m*e*p + n*d*o ) );
+		float a1 = ( a*b*n + a*m*c + l*b*c + 2.0*( o*e*f + d*e*q + d*p*f ) ) -
+		           ( l*f*f + m*e*e + n*d*d + 2.0*( a*f*q + b*e*p + c*d*o ) );
+		float a0 = ( a*b*c + 2.0*d*e*f ) - ( a*f*f + b*e*e + c*d*d );
 
 		numCubicRoots = solveCubic( a0, a1, a2, a3, xs );
 	}
@@ -114,7 +114,7 @@ vec3 phongTessTriAndRayIntersect(
 		return normal;
 	}
 
-	float x = 0.0f;
+	float x = 0.0;
 	float determinant = INFINITY;
 	float mA, mB, mC, mD, mE, mF;
 
@@ -128,7 +128,7 @@ vec3 phongTessTriAndRayIntersect(
 		determinant = min( determinant, tmp );
 	}
 
-	if( 0.0f >= determinant ) {
+	if( 0.0 >= determinant ) {
 		return normal;
 	}
 
@@ -153,7 +153,7 @@ vec3 phongTessTriAndRayIntersect(
 	mF = mF / mBorA;
 
 	float mAorB = AlessB ? mA : mB;
-	float mEorF = AlessB ? 2.0f * mE : 2.0f * mF;
+	float mEorF = AlessB ? 2.0 * mE : 2.0 * mF;
 	float mForE = AlessB ? mF : mE;
 	float ab = AlessB ? a : b;
 	float ba = AlessB ? b : a;
@@ -178,17 +178,17 @@ vec3 phongTessTriAndRayIntersect(
 		float h = ( 0 == loop ) ? -lc1 : -lc2;
 
 		// Solve quadratic function: c0*u*u + c1*u + c2 = 0
-		float c0 = ab + g * ( 2.0f * d + ba * g );
-		float c1 = 2.0f * ( h * ( d + ba * g ) + ef + fe * g );
-		float c2 = h * ( ba * h + 2.0f * fe ) + c;
-		int numResults = solveCubic( 0.0f, c0, c1, c2, xs );
+		float c0 = ab + g * ( 2.0 * d + ba * g );
+		float c1 = 2.0 * ( h * ( d + ba * g ) + ef + fe * g );
+		float c2 = h * ( ba * h + 2.0 * fe ) + c;
+		int numResults = solveCubic( 0.0, c0, c1, c2, xs );
 
 		for( int i = 0; i < numResults; i++ ) {
 			float u = xs[i];
 			float v = g * u + h;
-			float w = 1.0f - u - v;
+			float w = 1.0 - u - v;
 
-			if( u < 0.0f || v < 0.0f || w < 0.0f ) {
+			if( u < 0.0 || v < 0.0 || w < 0.0 ) {
 				continue;
 			}
 

@@ -1,6 +1,11 @@
 "use strict";
 
 
+/**
+ * Struct for holding basic data about a 3D object.
+ * @constructor
+ * @param {String} objectName Name of the 3D object.
+ */
 var Object3D = function( objectName ) {
 	this.name = objectName || "";
 
@@ -11,6 +16,10 @@ var Object3D = function( objectName ) {
 
 
 
+/**
+ * Class for loading an OBJ model.
+ * @constructor
+ */
 var ObjLoader = function() {
 	this.facesV = [];
 	this.facesVN = [];
@@ -87,9 +96,7 @@ ObjLoader.prototype.parse = function( objText ) {
 				return;
 			}
 
-			this.objects.push(
-				new Object3D( parts[1] )
-			);
+			this.objects.push( new Object3D( parts[1] ) );
 		}
 
 		// Vertex data of some form

@@ -1,14 +1,14 @@
-float seed = 0.0f;
+float seed = 0.0;
 
 float rand() {
-	return fract( sin( seed++ ) * 43758.5453123f );
+	return fract( sin( seed++ ) * 43758.5453123 );
 }
 
 
 #define bisect( v, w ) ( normalize( ( v ) + ( w ) ) )
 
 
-const uint MOD_3[6] = { 0, 1, 2, 0, 1, 2 };
+// int MOD_3[6] = int[]( 0, 1, 2, 0, 1, 2 );
 
 
 /**
@@ -18,8 +18,8 @@ const uint MOD_3[6] = { 0, 1, 2, 0, 1, 2 };
  * @return {float}
  */
 float fresnel( float u, float c ) {
-	float v = 1.0f - u;
-	return c + ( 1.0f - c ) * v * v * v * v * v;
+	float v = 1.0 - u;
+	return c + ( 1.0 - c ) * v * v * v * v * v;
 }
 
 
@@ -42,7 +42,7 @@ void swap( inout float a, inout float b ) {
 bool extendDepth( material mtl ) {
 	#if BRDF == 1
 		// TODO: Use rand() in some way instead of this fixed threshold.
-		return max( mtl.nu, mlt.nv ) >= 50.0f;
+		return max( mtl.nu, mlt.nv ) >= 50.0;
 	#else
 		return mtl.rough < rand();
 	#endif
@@ -55,7 +55,7 @@ bool extendDepth( material mtl ) {
  * @return {float}   The cube-root.
  */
 float cbrt( float a ) {
-	return ( a >= 0.0f ) ? pow( a, THIRD ) : -pow( -a, THIRD );
+	return ( a >= 0.0 ) ? pow( a, THIRD ) : -pow( -a, THIRD );
 }
 
 
@@ -71,23 +71,23 @@ float cbrt( float a ) {
 uint solveCubic( float a0, float a1, float a2, float a3, inout float x[3] ) {
 	float w, p, q, dis, phi;
 
-	if( abs( a0 ) > 0.0f ) {
+	if( abs( a0 ) > 0.0 ) {
 		// cubic problem
 		w = a1 / a0 * THIRD;
 		p = a2 / a0 * THIRD - w * w;
 		p = p * p * p;
-		q = 0.5f * ( a2 * w - a3 ) / a0 - w * w * w;
+		q = 0.5 * ( a2 * w - a3 ) / a0 - w * w * w;
 		dis = q * q + p;
 
-		if( dis < 0.0f ) {
+		if( dis < 0.0 ) {
 			// three real solutions
-			phi = acos( clamp( q / sqrt( -p ), -1.0f, 1.0f ) );
-			p = 2.0f * pow( -p, THIRD_HALF );
+			phi = acos( clamp( q / sqrt( -p ), -1.0, 1.0 ) );
+			p = 2.0 * pow( -p, THIRD_HALF );
 
 			float u[3] = {
 				p * cos( phi * THIRD ) - w,
-				p * cos( ( phi + 2.0f * M_PI ) * THIRD ) - w,
-				p * cos( ( phi + 4.0f * M_PI ) * THIRD ) - w
+				p * cos( ( phi + 2.0 * M_PI ) * THIRD ) - w,
+				p * cos( ( phi + 4.0 * M_PI ) * THIRD ) - w
 			};
 
 			x[0] = min( u[0], min( u[1], u[2] ) );
@@ -96,11 +96,11 @@ uint solveCubic( float a0, float a1, float a2, float a3, inout float x[3] ) {
 
 			// Minimize rounding errors through a Newton iteration
 			x[0] -= ( a3 + x[0] * ( a2 + x[0] * ( a1 + x[0] * a0 ) ) ) /
-					( a2 + x[0] * ( 2.0f * a1 + x[0] * 3.0f * a0 ) );
+					( a2 + x[0] * ( 2.0 * a1 + x[0] * 3.0 * a0 ) );
 			x[1] -= ( a3 + x[1] * ( a2 + x[1] * ( a1 + x[1] * a0 ) ) ) /
-					( a2 + x[1] * ( 2.0f * a1 + x[1] * 3.0f * a0 ) );
+					( a2 + x[1] * ( 2.0 * a1 + x[1] * 3.0 * a0 ) );
 			x[2] -= ( a3 + x[2] * ( a2 + x[2] * ( a1 + x[2] * a0 ) ) ) /
-					( a2 + x[2] * ( 2.0f * a1 + x[2] * 3.0f * a0 ) );
+					( a2 + x[2] * ( 2.0 * a1 + x[2] * 3.0 * a0 ) );
 
 			return 3;
 		}
@@ -111,17 +111,17 @@ uint solveCubic( float a0, float a1, float a2, float a3, inout float x[3] ) {
 
 			// Newton iteration
 			x[0] -= ( a3 + x[0] * ( a2 + x[0] * ( a1 + x[0] * a0 ) ) ) /
-					( a2 + x[0] * ( 2.0f * a1 + x[0] * 3.0f * a0 ) );
+					( a2 + x[0] * ( 2.0 * a1 + x[0] * 3.0 * a0 ) );
 
 			return 1;
 		}
 	}
-	else if( abs( a1 ) > 0.0f ) {
+	else if( abs( a1 ) > 0.0 ) {
 		// quadratic problem
-		p = 0.5f * a2 / a1;
+		p = 0.5 * a2 / a1;
 		dis = p * p - ( a3 / a1 );
 
-		if( dis >= 0.0f ) {
+		if( dis >= 0.0 ) {
 			float dis_sqrt = sqrt( dis );
 
 			// 2 real solutions
@@ -130,14 +130,14 @@ uint solveCubic( float a0, float a1, float a2, float a3, inout float x[3] ) {
 
 			// Newton iteration
 			x[0] -= ( a3 + x[0] * ( a2 + x[0] * a1 ) ) /
-					( a2 + x[0] * 2.0f * a1 );
+					( a2 + x[0] * 2.0 * a1 );
 			x[1] -= ( a3 + x[1] * ( a2 + x[1] * a1 ) ) /
-					( a2 + x[1] * 2.0f * a1 );
+					( a2 + x[1] * 2.0 * a1 );
 
 			return 2;
 		}
 	}
-	else if( abs( a2 ) > 0.0f ) {
+	else if( abs( a2 ) > 0.0 ) {
 		// linear equation
 		x[0] = -a3 / a2;
 
@@ -210,7 +210,7 @@ vec3 getTriangleNormalS(
  * @return {vec3}      Reflection vector.
  */
 vec3 getTriangleReflectionVec( vec3 view, vec3 np ) {
-	return view - 2.0f * np * dot( view, np );
+	return view - 2.0 * np * dot( view, np );
 }
 
 
@@ -236,7 +236,7 @@ vec3 getPhongTessNormal(
 	vec3 np = getTriangleNormal( f, u, v, w );
 	vec3 r = getTriangleReflectionVec( rayDir, np );
 
-	return ( dot( ns, r ) > 0.0f ) ? ns : np;
+	return ( dot( ns, r ) > 0.0 ) ? ns : np;
 }
 
 
@@ -278,7 +278,7 @@ vec3 projectOnPlane( vec3 q, vec3 p, vec3 n ) {
  * @param  {vec3}  l Normalized direction to the light source.
  * @return {float}
  */
-#define lambert( n, l ) ( max( dot( ( n ), ( l ) ), 0.0f ) )
+#define lambert( n, l ) ( max( dot( ( n ), ( l ) ), 0.0 ) )
 
 
 /**
@@ -297,28 +297,28 @@ vec3 projectOnPlane( vec3 q, vec3 p, vec3 n ) {
  * @return {vec3}         New ray direction.
  */
 vec3 refract( ray r, material mtl ) {
-	bool into = dot( r.normal, r.dir ) < 0.0f;
+	bool into = dot( r.normal, r.dir ) < 0.0;
 	// vec3 nl = into ? r.normal : -r.normal;
 
 	float m1 = into ? NI_AIR : mtl.Ni;
 	float m2 = into ? mtl.Ni : NI_AIR;
 	float m = m1 / m2;
 	// float cosI = -dot( r.dir, nl );
-	// float sinT2 = m * m * ( 1.0f - cosI * cosI );
+	// float sinT2 = m * m * ( 1.0 - cosI * cosI );
 
 	// // Critical angle. Total internal reflection.
-	// if( sinT2 > 1.0f ) {
+	// if( sinT2 > 1.0 ) {
 	// 	return reflect( r.dir, nl );
 	// }
 
 	// // Reflectance and transmission.
 
 	// float r0 = ( m1 - m2 ) / ( m1 + m2 );
-	// float c = ( m1 > m2 ) ? sqrt( 1.0f - sinT2 ) : cosI;
+	// float c = ( m1 > m2 ) ? sqrt( 1.0 - sinT2 ) : cosI;
 	// float reflectance = fresnel( c, r0 * r0 );
 
 	// vec3 newRay = ( reflectance < rand() )
-	//             ? m * r.dir + ( m * cosI - sqrt( 1.0f - sinT2 ) ) * nl
+	//             ? m * r.dir + ( m * cosI - sqrt( 1.0 - sinT2 ) ) * nl
 	//             : reflect( r.dir, nl );
 
 	// return normalize( newRay );

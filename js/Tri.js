@@ -1,6 +1,10 @@
 "use strict";
 
 
+/**
+ * Triangle face.
+ * @constructor
+ */
 var Tri = function() {
 	this.face = {
 		a: -1,
