@@ -41,9 +41,10 @@ vec3 flatTriAndRayIntersect( face f, ray r, inout vec3 tuv, float tNear, float t
 vec3 checkFaceIntersection( ray r, face f, inout vec3 tuv, float tNear, float tFar ) {
 	#if PHONG_TESS == 1
 
-		bvec3 cmp = equal( f.an, equal( f.bn, f.cn ) );
+		bvec3 cmp1 = equal( f.an, f.bn );
+		bvec3 cmp2 = equal( f.bn, f.cn );
 
-		if( cmp.x && cmp.y && cmp.z )
+		if( cmp1.x && cmp1.y && cmp1.z && cmp2.x && cmp2.y && cmp2.z )
 
 	#endif
 

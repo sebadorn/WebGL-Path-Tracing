@@ -54,17 +54,16 @@ var ShaderLoader = {
 	 */
 	_setDefineValues: function( source ) {
 		var acc = SceneManager.getAccStructData();
-		var data = SceneManager.getBVHShaderData();
 		var cl = CFG.CLEAR_COLOR;
 		var skyLight = "vec3( " + cl[0] + ", " + cl[1] + ", " + cl[2] + " )";
 
 		source = source.replace( "%ACCEL_STRUCT%", CFG.ACCEL_STRUCT );
-		source = source.replace( "%ANTI_ALIASING%", parseInt( CFG.SHADER.ANTI_ALIASING ) );
+		source = source.replace( "%ANTI_ALIASING%", CFG.SHADER.ANTI_ALIASING );
 		source = source.replace( "%BRDF%", CFG.SHADER.BRDF );
 		source = source.replace( "%BVH_STACKSIZE%", acc.bvh.depth );
 		source = source.replace( "%IMG_HEIGHT%", gHeight );
 		source = source.replace( "%IMG_WIDTH%", gWidth );
-		source = source.replace( "%IMPLICIT%", parseInt( CFG.SHADER.IMPLICIT ) );
+		source = source.replace( "%IMPLICIT%", CFG.SHADER.IMPLICIT ? 1 : 0 );
 		source = source.replace( "%MAX_ADDED_DEPTH%", CFG.SHADER.MAX_ADDED_DEPTH );
 		source = source.replace( "%MAX_DEPTH%", CFG.SHADER.MAX_DEPTH );
 		source = source.replace( "%NUM_BVH_FACES%", acc.bvh.numFaces );
@@ -79,8 +78,8 @@ var ShaderLoader = {
 		source = source.replace( "%SAMPLES%", CFG.SHADER.SAMPLES );
 		source = source.replace( "%SKY_LIGHT%", skyLight );
 
-		source = source.replace( "%DATA_BVH_FACES%", data.faces );
-		source = source.replace( "%DATA_BVH_NODES%", data.nodes );
+		source = source.replace( "%DATA_BVH_FACES%", acc.bvh.facesStr );
+		source = source.replace( "%DATA_BVH_NODES%", acc.bvh.nodesStr );
 
 		return source;
 	},

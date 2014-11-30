@@ -111,7 +111,8 @@ struct face {
 		float Ni;
 		float p;
 		float rough;
-		vec3 color;
+		vec3 colorDiff;
+		vec3 colorSpec;
 		bool isLight;
 	};
 

@@ -1,7 +1,6 @@
 #FILE:pt_header.frag:FILE#
 #FILE:pt_data.frag:FILE#
 #FILE:pt_utils.frag:FILE#
-#FILE:pt_spectral_precalc.frag:FILE#
 #FILE:pt_brdf.frag:FILE#
 #FILE:pt_phongtess.frag:FILE#
 #FILE:pt_intersect.frag:FILE#
@@ -21,7 +20,7 @@
  * @return {ray}
  */
 ray initRay( float pxDim, float eyeIn[12] ) {
-	vec2 pos = vec2( get_global_id( 0 ), get_global_id( 1 ) ); // TODO:
+	vec2 pos = vec2( gl_FragCoord.x - 0.5, gl_FragCoord.y - 0.5 );
 
 	vec3 eye = vec3( eyeIn[0], eyeIn[1], eyeIn[2] );
 	vec3 w = vec3( eyeIn[3], eyeIn[4], eyeIn[5] );
@@ -29,8 +28,8 @@ ray initRay( float pxDim, float eyeIn[12] ) {
 	vec3 v = vec3( eyeIn[9], eyeIn[10], eyeIn[11] );
 
 	vec3 initialRay = w + pxDim * 0.5 *
-			          ( u - IMG_WIDTH * u + 2.0 * pos.x * u +
-			            v - IMG_HEIGHT * v + 2.0 * pos.y * v );
+			          ( u - float( IMG_WIDTH ) * u + 2.0 * pos.x * u +
+			            v - float( IMG_HEIGHT ) * v + 2.0 * pos.y * v );
 
 	ray r;
 	r.t = INFINITY;
@@ -38,7 +37,7 @@ ray initRay( float pxDim, float eyeIn[12] ) {
 	r.dir = normalize( initialRay );
 
 	float rnd = rand();
-	vec3 aaDir = jitter( r.dir, PI_X2 * rand(), sqrt( rnd ), sqrt( 1.0 - rnd ) );
+	vec3 aaDir = jitter( r.dir, M_PI_X2 * rand(), sqrt( rnd ), sqrt( 1.0 - rnd ) );
 	r.dir = normalize( r.dir +	aaDir * pxDim * ANTI_ALIASING );
 
 	return r;
@@ -80,14 +79,14 @@ ray initRay( float pxDim, float eyeIn[12] ) {
  * @param {material*}       mtl
  * @param {ray4*}           lightRay
  * @param {int}             lightRaySource
- * @param {uint*}           secondaryPaths
+ * @param {int*}           secondaryPaths
  * @param {constant float*} specPowerDists
  * @param {float*}          spd
  * @param {float*}          spdTotal
  */
 void updateColor(
 	ray r, ray newRay, material mtl,
-	ray lightRay, material lightMtl, uint secondaryPaths,
+	ray lightRay, material lightMtl, int secondaryPaths,
 	inout vec3 color, inout vec3 colorTotal
 ) {
 	// BRDF: Schlick
@@ -183,22 +182,25 @@ void main(
 	// geometry and material related
 	face faces[NUM_FACES],
 	material materials[NUM_MATERIALS]
+	// TODO: No arguments for main function. Pass per uniform value.
 ) {
-	initMod3();
+	initArrayMod3();
+	initArraysAccStruct();
+
 	seed = initalSeed;
 	vec3 color, colorTotal;
 
 	bool addDepth;
-	uint secondaryPaths = 1; // Start at 1 instead of 0, because we are going to divide through it.
+	int secondaryPaths = 1; // Start at 1 instead of 0, because we are going to divide through it.
 
-	for( uint sample = 0; sample < SAMPLES; sample++ ) {
+	for( int sample = 0; sample < SAMPLES; sample++ ) {
 		color = vec3( 1.0 );
 		vec3 lightColor = vec3( -1.0 );
 		ray r = initRay( pxDim, eyeIn );
 		float maxValSpd = 0.0;
 		int depthAdded = 0;
 
-		for( uint depth = 0; depth < MAX_DEPTH + depthAdded; depth++ ) {
+		for( int depth = 0; depth < MAX_DEPTH + depthAdded; depth++ ) {
 			CALL_TRAVERSE
 
 			if( r.t == INFINITY ) {

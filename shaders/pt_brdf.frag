@@ -146,7 +146,7 @@
 		vec3 newRay;
 
 		if( mtl.rough == 0.0 ) {
-			return reflect( DIR, N );
+			return reflect( r.dir, r.normal );
 		}
 
 		float a = rand();
@@ -183,11 +183,11 @@
 			phi += M_PI_2;
 		}
 
-		vec3 H = jitter( N, phi, sin( alpha ), cos( alpha ) );
-		newRay = reflect( DIR, H );
+		vec3 H = jitter( r.normal, phi, sin( alpha ), cos( alpha ) );
+		newRay = reflect( r.dir, H );
 
-		if( dot( newRay, N ) <= 0.0 ) {
-			newRay = jitter( N, PI_X2 * rand() * 2.0, sqrt( a ), sqrt( 1.0 - a ) );
+		if( dot( newRay, r.normal ) <= 0.0 ) {
+			newRay = jitter( r.normal, M_PI_X2 * rand() * 2.0, sqrt( a ), sqrt( 1.0 - a ) );
 		}
 
 		return newRay;

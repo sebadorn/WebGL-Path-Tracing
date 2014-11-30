@@ -26,7 +26,7 @@ var CFG = {
 	// Shader variables
 	SHADER: {
 		// Use anti-aliasing
-		ANTI_ALIASING: true, // [boolean]
+		ANTI_ALIASING: 0.7, // [float], 0.0: disable
 		// Bi-directional Reflection Distribution Function
 		// 0: Schlick
 		// 1: Shirley-Ashikhmin

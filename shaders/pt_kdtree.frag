@@ -10,12 +10,12 @@
  */
 void checkFaces(
 	ray r, int faceIndex, int numFaces,
-	uint kdFaces[NUM_KD_FACES], face faces[NUM_FACES],
+	int kdFaces[NUM_KD_FACES], face faces[NUM_FACES],
 	float tNear, float tFar
 ) {
-	for( uint i = faceIndex; i < faceIndex + numFaces; i++ ) {
+	for( int i = faceIndex; i < faceIndex + numFaces; i++ ) {
 		vec3 tuv;
-		uint j = kdFaces[i];
+		int j = kdFaces[i];
 
 		vec3 normal = checkFaceIntersection( r, faces[j], tuv, tNear, tFar );
 
@@ -39,11 +39,11 @@ void checkFaces(
  * @param  {vec3}       hitNear
  * @return {int}
  */
-int goToLeafNode( uint nodeIndex, kdNonLeaf kdNonLeaves[NUM_KD_NONLEAVES], vec3 hitNear ) {
+int goToLeafNode( int nodeIndex, kdNonLeaf kdNonLeaves[NUM_KD_NONLEAVES], vec3 hitNear ) {
 	bool isOnLeft;
 
 	while( true ) {
-		uint axis = kdNonLeaves[nodeIndex].axis;
+		int axis = kdNonLeaves[nodeIndex].axis;
 		ivec2 children = kdNonLeaves[nodeIndex].children;
 		bvec2 isLeaf = kdNonLeaves[nodeIndex].isLeaf;
 		float split = kdNonLeaves[nodeIndex].split;
@@ -93,16 +93,16 @@ void updateEntryDistanceAndExitRope(
  * @param {ray}         r
  * @param {kdNonLeaf[]} kdNonLeaves
  * @param {kdLeaf[]}    kdLeaves
- * @param {uint[]}      kdFaces
+ * @param {int[]}      kdFaces
  * @param {face[]}      faces
  * @param {float}       tNear
  * @param {float}       tFar
- * @param {uint}        kdRoot
+ * @param {int}        kdRoot
  */
 void traverseKdTree(
 	ray r, kdNonLeaf kdNonLeaves[NUM_KD_NONLEAVES],
-	kdLeaf kdLeaves[NUM_KD_LEAVES], uint kdFaces[NUM_KD_FACES], face faces[NUM_FACES],
-	float tNear, float tFar, uint kdRoot
+	kdLeaf kdLeaves[NUM_KD_LEAVES], int kdFaces[NUM_KD_FACES], face faces[NUM_FACES],
+	float tNear, float tFar, int kdRoot
 ) {
 	int exitRope;
 	int nodeIndex = goToLeafNode( kdRoot, kdNonLeaves, r.origin + tNear * r.dir );
@@ -140,16 +140,16 @@ void traverseKdTree(
  * @param {bvhNode[]}   bvh
  * @param {kdNonLeaf[]} kdNonLeaves
  * @param {kdLeaf[]}    kdLeaves
- * @param {uint[]}      kdFaces
+ * @param {int[]}      kdFaces
  * @param {ray}         r
  * @param {face[]}      faces
  */
 void traverse(
 	bvhNode bvh[NUM_BVH_NODES], kdNonLeaf kdNonLeaves[NUM_KD_NONLEAVES],
-	kdLeaf kdLeaves[NUM_KD_LEAVES], uint kdFaces[NUM_KD_FACES],
+	kdLeaf kdLeaves[NUM_KD_LEAVES], int kdFaces[NUM_KD_FACES],
 	ray r, face faces[NUM_FACES]
 ) {
-	uint bvhStack[BVH_STACKSIZE];
+	int bvhStack[BVH_STACKSIZE];
 	int stackIndex = 0;
 	bvhStack[stackIndex] = 0; // Node 0 is always the BVH root node
 

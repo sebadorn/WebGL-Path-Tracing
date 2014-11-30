@@ -14,10 +14,10 @@
  * @param {float}     tFar
  */
 void intersectFaces(
-	inout ray r, bvhNode node, uint bvhFaces[NUM_BVH_FACES], face faces[NUM_FACES],
+	inout ray r, bvhNode node, int bvhFaces[NUM_BVH_FACES], face faces[NUM_FACES],
 	float tNear, float tFar
 ) {
-	for( char i = 0; i < node.facesInterval.y; i++ ) {
+	for( int i = 0; i < node.facesInterval.y; i++ ) {
 		vec3 tuv;
 		vec3 normal = checkFaceIntersection(
 			r, faces[bvhFaces[node.facesInterval.x + i]], tuv, tNear, tFar
@@ -39,14 +39,14 @@ void intersectFaces(
 /**
  * Traverse the BVH and test the faces against the given ray.
  * @param {bvhNode[]} bvh
- * @param {uint[]}    bvhFaces
+ * @param {int[]}    bvhFaces
  * @param {ray}       r
  * @param {face[]}    faces
  */
 void traverse(
-	bvhNode bvh[NUM_BVH_NODES], uint bvhFaces[NUM_BVH_FACES], inout ray r, face faces[NUM_FACES]
+	bvhNode bvh[NUM_BVH_NODES], int bvhFaces[NUM_BVH_FACES], inout ray r, face faces[NUM_FACES]
 ) {
-	uint bvhStack[BVH_STACKSIZE];
+	int bvhStack[BVH_STACKSIZE];
 	int stackIndex = 0;
 	bvhStack[stackIndex] = 0; // Node 0 is always the BVH root node
 
@@ -119,12 +119,12 @@ void traverse(
  * @param {face[]}    faces
  */
 void traverse_shadows(
-	bvhNode bvh[NUM_BVH_NODES], uint bvhFaces[NUM_BVH_FACES], ray r, face faces[NUM_FACES]
+	bvhNode bvh[NUM_BVH_NODES], int bvhFaces[NUM_BVH_FACES], ray r, face faces[NUM_FACES]
 ) {
 	bool addLeftToStack, addRightToStack, rightThenLeft;
 	float tFarL, tFarR, tNearL, tNearR;
 
-	uint bvhStack[BVH_STACKSIZE];
+	int bvhStack[BVH_STACKSIZE];
 	int stackIndex = 0;
 	bvhStack[stackIndex] = 0; // Node 0 is always the BVH root node
 

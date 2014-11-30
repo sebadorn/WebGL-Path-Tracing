@@ -8,25 +8,36 @@ float rand() {
 #define bisect( v, w ) ( normalize( ( v ) + ( w ) ) )
 
 
-// int MOD_3[6] = int[]( 0, 1, 2, 0, 1, 2 );
+int MOD_3[6];
+
+void initArrayMod3() {
+	MOD_3[0] = 0;
+	MOD_3[1] = 1;
+	MOD_3[2] = 2;
+	MOD_3[3] = 0;
+	MOD_3[4] = 1;
+	MOD_3[5] = 2;
+}
 
 
 /**
  * Fresnel factor.
  * @param  {float} u
- * @param  {float} c Reflection factor.
- * @return {float}
+ * @param  {vec3}  c Reflection factor.
+ * @return {vec3}
  */
-float fresnel( float u, float c ) {
+vec3 fresnel( float u, vec3 c ) {
 	float v = 1.0 - u;
-	return c + ( 1.0 - c ) * v * v * v * v * v;
+	vec3 cm = vec3( 1.0 - c[0], 1.0 - c[1], 1.0 - c[2] );
+
+	return c + cm * v * v * v * v * v;
 }
 
 
 /**
  * Swap two float values.
- * @param {float} a
- * @param {float} b
+ * @param {inout float} a
+ * @param {inout float} b
  */
 void swap( inout float a, inout float b ) {
 	float tmp = a;
@@ -65,10 +76,10 @@ float cbrt( float a ) {
  * @param  {float}    a1
  * @param  {float}    a2
  * @param  {float}    a3
- * @param  {float[3]} x  Output. Found real solutions.
- * @return {uint}        Number of found real solutions.
+ * @param  {inout vec3} x  Output. Found real solutions.
+ * @return {int}        Number of found real solutions.
  */
-uint solveCubic( float a0, float a1, float a2, float a3, inout float x[3] ) {
+int solveCubic( float a0, float a1, float a2, float a3, inout vec3 x ) {
 	float w, p, q, dis, phi;
 
 	if( abs( a0 ) > 0.0 ) {
@@ -84,11 +95,10 @@ uint solveCubic( float a0, float a1, float a2, float a3, inout float x[3] ) {
 			phi = acos( clamp( q / sqrt( -p ), -1.0, 1.0 ) );
 			p = 2.0 * pow( -p, THIRD_HALF );
 
-			float u[3] = {
-				p * cos( phi * THIRD ) - w,
-				p * cos( ( phi + 2.0 * M_PI ) * THIRD ) - w,
-				p * cos( ( phi + 4.0 * M_PI ) * THIRD ) - w
-			};
+			float u[3];
+			u[0] = p * cos( phi * THIRD ) - w;
+			u[1] = p * cos( ( phi + 2.0 * M_PI ) * THIRD ) - w;
+			u[2] = p * cos( ( phi + 4.0 * M_PI ) * THIRD ) - w;
 
 			x[0] = min( u[0], min( u[1], u[2] ) );
 			x[1] = max( min( u[0], u[1] ), max( min( u[0], u[2] ), min( u[1], u[2] ) ) );

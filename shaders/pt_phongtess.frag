@@ -30,11 +30,11 @@ vec3 phongTessellation(
  * Get the best axis of the ray direction in order to calculate the t factor later on.
  * Meaning: Get the axis with the biggest coordinate.
  * @param  {vec3} rd Ray direction.
- * @return {uint}    Index of the axis (x: 0, y: 1, z: 2)
+ * @return {int}    Index of the axis (x: 0, y: 1, z: 2)
  */
-uint getBestRayDomain( vec3 rd ) {
+int getBestRayDomain( vec3 rd ) {
 	vec3 d = abs( rd );
-	uint domain = ( d.y > d.z ) ? 1 : 2;
+	int domain = ( d.y > d.z ) ? 1 : 2;
 
 	if( d.x > d.y ) {
 		domain = ( d.x > d.z ) ? 0 : 2;
@@ -54,14 +54,14 @@ uint getBestRayDomain( vec3 rd ) {
  * @return {vec3}
  */
 vec3 phongTessTriAndRayIntersect(
-	face f, ray r, inout vec3 tuv, float tNear, float tFar
+	face fc, ray r, inout vec3 tuv, float tNear, float tFar
 ) {
-	#define P1 ( f.a )
-	#define P2 ( f.b )
-	#define P3 ( f.c )
-	#define N1 ( f.an )
-	#define N2 ( f.bn )
-	#define N3 ( f.cn )
+	#define P1 ( fc.a )
+	#define P2 ( fc.b )
+	#define P3 ( fc.c )
+	#define N1 ( fc.an )
+	#define N2 ( fc.bn )
+	#define N3 ( fc.cn )
 
 	vec3 normal = vec3( 0.0 );
 	tuv.x = INFINITY;
@@ -96,7 +96,7 @@ vec3 phongTessTriAndRayIntersect(
 
 	// Solve cubic
 
-	float xs[3] = float[3]( -1.0, -1.0, -1.0 );
+	vec3 xs = vec3( -1.0, -1.0, -1.0 );
 	int numCubicRoots = 0;
 
 	{
@@ -133,7 +133,7 @@ vec3 phongTessTriAndRayIntersect(
 	}
 
 
-	int domain = getBestRayDomain( ray.dir );
+	int domain = getBestRayDomain( r.dir );
 
 	mA = a * x + l;
 	mB = b * x + m;
@@ -168,11 +168,9 @@ vec3 phongTessTriAndRayIntersect(
 	float lc2 = mForE - sqrtC;
 
 	if( abs( mEorF - lab1 * lc1 - lab2 * lc2 ) < abs( mEorF - lab1 * lc2 - lab2 * lc1 ) ) {
-		swap( &lc1, &lc2 );
+		swap( lc1, lc2 );
 	}
 
-	// TODO: #pragma probably doesn't do anything.
-	#pragma unroll(2)
 	for( int loop = 0; loop < 2; loop++ ) {
 		float g = ( 0 == loop ) ? -lab1 : -lab2;
 		float h = ( 0 == loop ) ? -lc1 : -lc2;
@@ -203,11 +201,11 @@ vec3 phongTessTriAndRayIntersect(
 			// r.t   -- best hit found in other AABBs so far
 			// tFar  -- far limit of this AABB
 			// tNear -- near limit of this AABB
-			if( t >= fabs( tNear ) && t <= min( tuv.x, min( r.t, tFar ) ) ) {
+			if( t >= abs( tNear ) && t <= min( tuv.x, min( r.t, tFar ) ) ) {
 				tuv.x = t;
 				tuv.y = u;
 				tuv.z = v;
-				normal = getPhongTessNormal( f, r.dir, u, v, w, C1, C2, C3, E12, E20 );
+				normal = getPhongTessNormal( fc, r.dir, u, v, w, C1, C2, C3, E12, E20 );
 			}
 		}
 	}

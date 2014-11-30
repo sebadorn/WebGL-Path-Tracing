@@ -31,10 +31,14 @@ var SceneManager = {
 	 * @return {Object} Data about the acceleration structure.
 	 */
 	getAccStructData: function() {
+		var bvhStrings = this.getBVHShaderData();
+
 		return {
 			bvh: {
 				depth: this._scene.bvh.depthReached,
-				numFaces: 0, // TODO: ?
+				facesStr: bvhStrings.faces,
+				nodesStr: bvhStrings.nodes,
+				numFaces: bvhStrings.numFaces,
 				numNodes: this._scene.bvh.nodes.length
 			},
 			kd: { // TODO: kd-tree not yet available
@@ -62,31 +66,33 @@ var SceneManager = {
 			var n = nodes[i];
 
 			// faces of leaf node
-			for( var j = 0; j < n.faces.length; j++ ) {
-				var f = n.faces[j].face;
-				facesStr += f.w;
-				facesStr += ( j < n.faces.length - 1 ) ? ", " : "";
+			if( !n.leftChild ) {
+				for( var j = 0; j < n.faces.length; j++ ) {
+					var f = n.faces[j].face;
+					facesStr += "bvhFaces[" + j + "] = " + f.w + ";\n";
+				}
+
+				numFaces += n.faces.length;
 			}
 
-			numFaces += n.faces.length;
-
-			var facesStart = ( n.faces.length > 0 ) ? numFaces : -1;
+			var facesStart = ( !n.leftChild ) ? numFaces : -1;
+			var facesLength = ( !n.leftChild ) ? n.faces.length : 0;
 
 			// node data
 			var initStr = "";
 			initStr = "vec3( " + n.bb.min.x + ", " + n.bb.min.y + ", " + n.bb.min.z + " ), "; // bbMin
 			initStr += "vec3( " + n.bb.max.x + ", " + n.bb.max.y + ", " + n.bb.max.z + " ), "; // bbMax
-			initStr += "ivec2( " + facesStart + ", " + n.faces.length + " ), "; // facesInterval
+			initStr += "ivec2( " + facesStart + ", " + facesLength + " ), "; // facesInterval
 			initStr += ( n.leftChild ? n.leftChild.id : -1 ) + ", "; // leftChild
 			initStr += ( n.rightChild ? n.rightChild.id : -1 ); // rightChild
 
-			nodesStr += "bvhNode( " + initStr + " )";
-			nodesStr += ( i < nodes.length - 1 ) ? ",\n" : "";
+			nodesStr += "bvh[" + i + "] = bvhNode( " + initStr + " );\n";
 		}
 
 		return {
 			faces: facesStr,
-			nodes: nodesStr
+			nodes: nodesStr,
+			numFaces: numFaces
 		};
 	},
 
