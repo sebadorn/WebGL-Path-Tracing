@@ -15,6 +15,18 @@ var CFG = {
 		USE_SPATIAL_SPLITS: false // [boolean]
 	},
 
+	CAMERA: {
+		EYE: [0.0, 1.0, 3.0],
+		CENTER: [0.0, 0.0, 1.0],
+		PERSPECTIVE: {
+			FOV: 45.0,
+			ZFAR: 100.0,
+			ZNEAR: 0.1
+		},
+		// Step distance
+		SPEED: 0.2
+	},
+
 	// OpenGL color for the cleared render area.
 	// RGBA
 	CLEAR_COLOR: [1.0, 1.0, 1.0, 0.0], // [array<float>]

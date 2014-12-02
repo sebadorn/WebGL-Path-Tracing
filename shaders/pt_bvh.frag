@@ -1,8 +1,8 @@
 // Traversal for the acceleration structure.
 // Type: Bounding Volume Hierarchy (BVH)
 
-#define CALL_TRAVERSE         traverse( bvh, bvhFaces, r, faces );
-#define CALL_TRAVERSE_SHADOWS traverse_shadows( bvh, bvhFaces, lightRay, faces );
+#define CALL_TRAVERSE         traverse( r, faces );
+#define CALL_TRAVERSE_SHADOWS traverse_shadows( lightRay, faces );
 
 
 /**
@@ -14,8 +14,7 @@
  * @param {float}     tFar
  */
 void intersectFaces(
-	inout ray r, bvhNode node, int bvhFaces[NUM_BVH_FACES], face faces[NUM_FACES],
-	float tNear, float tFar
+	inout ray r, bvhNode node, face faces[NUM_FACES], float tNear, float tFar
 ) {
 	for( int i = 0; i < node.facesInterval.y; i++ ) {
 		vec3 tuv;
@@ -43,9 +42,7 @@ void intersectFaces(
  * @param {ray}       r
  * @param {face[]}    faces
  */
-void traverse(
-	bvhNode bvh[NUM_BVH_NODES], int bvhFaces[NUM_BVH_FACES], inout ray r, face faces[NUM_FACES]
-) {
+void traverse( inout ray r, face faces[NUM_FACES] ) {
 	int bvhStack[BVH_STACKSIZE];
 	int stackIndex = 0;
 	bvhStack[stackIndex] = 0; // Node 0 is always the BVH root node
@@ -63,7 +60,7 @@ void traverse(
 				intersectBox( r, invDir, node.bbMin, node.bbMax, tNearL, tFarL ) &&
 				r.t > tNearL
 			) {
-				intersectFaces( r, node, bvhFaces, faces, tNearL, tFarL );
+				intersectFaces( r, node, faces, tNearL, tFarL );
 			}
 
 			continue;
@@ -118,9 +115,7 @@ void traverse(
  * @param {ray}       r
  * @param {face[]}    faces
  */
-void traverse_shadows(
-	bvhNode bvh[NUM_BVH_NODES], int bvhFaces[NUM_BVH_FACES], ray r, face faces[NUM_FACES]
-) {
+void traverse_shadows( ray r, face faces[NUM_FACES] ) {
 	bool addLeftToStack, addRightToStack, rightThenLeft;
 	float tFarL, tFarR, tNearL, tNearR;
 
@@ -138,7 +133,7 @@ void traverse_shadows(
 		// Is a leaf node with faces
 		if( node.leftChild < 0 && node.rightChild < 0 ) {
 			if( intersectBox( r, invDir, node.bbMin, node.bbMax, tNearL, tFarL ) ) {
-				intersectFaces( r, node, bvhFaces, faces, tNearL, tFarL );
+				intersectFaces( r, node, faces, tNearL, tFarL );
 
 				if( r.t < INFINITY ) {
 					break;

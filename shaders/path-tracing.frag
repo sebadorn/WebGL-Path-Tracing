@@ -1,3 +1,15 @@
+// Uniform values passed to shader
+uniform vec3 uCamEye;
+uniform vec3 uCamU;
+uniform vec3 uCamV;
+uniform vec3 uCamW;
+uniform float uGlobalTime;
+uniform float uPixelDimensions;
+uniform float uPixelWeight;
+uniform vec2 uResolution;
+uniform vec3 uSunPos;
+
+
 #FILE:pt_header.frag:FILE#
 #FILE:pt_data.frag:FILE#
 #FILE:pt_utils.frag:FILE#
@@ -15,30 +27,28 @@
 
 /**
  * Generate the initial ray into the scene.
- * @param  {float}     pxDim
- * @param  {float[12]} eyeIn Camera eye position.
  * @return {ray}
  */
-ray initRay( float pxDim, float eyeIn[12] ) {
+ray initRay() {
 	vec2 pos = vec2( gl_FragCoord.x - 0.5, gl_FragCoord.y - 0.5 );
 
-	vec3 eye = vec3( eyeIn[0], eyeIn[1], eyeIn[2] );
-	vec3 w = vec3( eyeIn[3], eyeIn[4], eyeIn[5] );
-	vec3 u = vec3( eyeIn[6], eyeIn[7], eyeIn[8] );
-	vec3 v = vec3( eyeIn[9], eyeIn[10], eyeIn[11] );
+	// vec3 eye = vec3( eyeIn[0], eyeIn[1], eyeIn[2] );
+	// vec3 w = vec3( eyeIn[3], eyeIn[4], eyeIn[5] );
+	// vec3 u = vec3( eyeIn[6], eyeIn[7], eyeIn[8] );
+	// vec3 v = vec3( eyeIn[9], eyeIn[10], eyeIn[11] );
 
-	vec3 initialRay = w + pxDim * 0.5 *
-			          ( u - float( IMG_WIDTH ) * u + 2.0 * pos.x * u +
-			            v - float( IMG_HEIGHT ) * v + 2.0 * pos.y * v );
+	vec3 initialRay = uCamW + uPixelDimensions * 0.5 *
+			          ( uCamU - float( uResolution.x ) * uCamU + 2.0 * pos.x * uCamU +
+			            uCamV - float( uResolution.y ) * uCamV + 2.0 * pos.y * uCamV );
 
 	ray r;
 	r.t = INFINITY;
-	r.origin = eye;
+	r.origin = uCamEye;
 	r.dir = normalize( initialRay );
 
 	float rnd = rand();
 	vec3 aaDir = jitter( r.dir, M_PI_X2 * rand(), sqrt( rnd ), sqrt( 1.0 - rnd ) );
-	r.dir = normalize( r.dir +	aaDir * pxDim * ANTI_ALIASING );
+	r.dir = normalize( r.dir +	aaDir * uPixelDimensions * ANTI_ALIASING );
 
 	return r;
 }
@@ -55,7 +65,7 @@ ray initRay( float pxDim, float eyeIn[12] ) {
  */
 // void setColors(
 // 	read_only image2d_t imageIn, write_only image2d_t imageOut,
-// 	float pixelWeight, float spdLight[40], float focus
+// 	float spdLight[40], float focus
 // ) {
 // 	vec2 pos = { get_global_id( 0 ), get_global_id( 1 ) };
 // 	sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
@@ -64,7 +74,7 @@ ray initRay( float pxDim, float eyeIn[12] ) {
 
 // 	float4 color = mix(
 // 		clamp( accumulatedColor, 0.0, 1.0 ),
-// 		imagePixel, pixelWeight
+// 		imagePixel, uPixelWeight
 // 	);
 // 	color.w = focus;
 
@@ -170,11 +180,6 @@ void updateColor(
  * @param {write_only image2d_t}   imageOut
  */
 void main(
-	// changing values
-	float initialSeed,
-	float pixelWeight,
-	vec3 sunPos,
-
 	// view
 	float pxDim,
 	float eyeIn[12],
@@ -182,12 +187,11 @@ void main(
 	// geometry and material related
 	face faces[NUM_FACES],
 	material materials[NUM_MATERIALS]
-	// TODO: No arguments for main function. Pass per uniform value.
 ) {
 	initArrayMod3();
 	initArraysAccStruct();
 
-	seed = initalSeed;
+	seed = uGlobalTime;
 	vec3 color, colorTotal;
 
 	bool addDepth;
@@ -284,6 +288,6 @@ void main(
 
 	#endif
 
-	// setColors( imageIn, imageOut, pixelWeight, spdTotal, focus );
+	// setColors( imageIn, imageOut, spdTotal, focus );
 	gl_FragColor = vec4( colorTotal, 1.0 );
 }
