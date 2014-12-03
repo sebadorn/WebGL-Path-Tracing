@@ -1,3 +1,15 @@
+face faces[NUM_FACES];
+material materials[NUM_MATERIALS];
+
+void initArrayFaces() {
+	%DATA_FACES%
+}
+
+void initArrayMaterials() {
+	%DATA_MATERIALS%
+}
+
+
 #if ACCEL_STRUCT == 0
 
 	bvhNode bvh[NUM_BVH_NODES];

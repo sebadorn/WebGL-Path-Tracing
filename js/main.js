@@ -36,17 +36,29 @@ function draw( elapsedTime ) {
 	gl.bindBuffer( gl.ARRAY_BUFFER, glBuffers["path-tracing"]["array_buffer"] );
 	gl.vertexAttribPointer( glAttrPointerVertex, 2, gl.FLOAT, gl.FALSE, 0, 0 );
 
-	// TODO: camera system
-	gl.uniform3f( gl.getUniformLocation( program, "uCamEye" ), 0.0, 0.0, 0.0 );
-	gl.uniform3f( gl.getUniformLocation( program, "uCamU" ), 0.0, 0.0, 0.0 );
-	gl.uniform3f( gl.getUniformLocation( program, "uCamV" ), 0.0, 0.0, 0.0 );
-	gl.uniform3f( gl.getUniformLocation( program, "uCamW" ), 0.0, 0.0, 0.0 );
-	gl.uniform1f( gl.getUniformLocation( program, "uPixelDimensions" ), 0.0 );
+	// TODO: Calculate *once* (and for every window resize)
+	var aspect = gWidth / parseFloat( gHeight );
+	var f = aspect * 2.0 * Math.tan( MathHelp.degToRad( CFG.CAMERA.PERSPECTIVE.FOV ) / 2.0 );
+	var pxDim = f / gWidth;
+
+	// TODO: Calculate only after camera changes
+	var c = Camera.getAdjustedCenter();
+	var eye = Camera.getEye();
+	var up = Camera.getUp();
+	var w = c.sub( eye ).normalize();
+	var u = w.cross( up ).normalize();
+	var v = u.cross( w ).normalize();
+
+	gl.uniform3f( gl.getUniformLocation( program, "uCamEye" ), eye.x, eye.y, eye.z );
+	gl.uniform3f( gl.getUniformLocation( program, "uCamU" ), u.x, u.y, u.z );
+	gl.uniform3f( gl.getUniformLocation( program, "uCamV" ), v.x, v.y, v.z );
+	gl.uniform3f( gl.getUniformLocation( program, "uCamW" ), w.x, w.y, w.z );
+	gl.uniform1f( gl.getUniformLocation( program, "uPixelDimension" ), pxDim );
 
 	gl.uniform1f( gl.getUniformLocation( program, "uGlobalTime" ), elapsedTime * 0.0001 );
 	gl.uniform1f( gl.getUniformLocation( program, "uPixelWeight" ), 1.0 ); // TODO: combine generated textures over time
 	gl.uniform2f( gl.getUniformLocation( program, "uResolution" ), gWidth, gHeight );
-	gl.uniform3f( gl.getUniformLocation( program, "uSunPos" ), 0.0, 20.0, 5.0 ); // TODO: move freely
+	gl.uniform3f( gl.getUniformLocation( program, "uSunPos" ), 6.0, 20.0, 0.0 ); // TODO: move freely
 
 	gl.drawArrays( gl.TRIANGLE_STRIP, 0, 4 );
 }

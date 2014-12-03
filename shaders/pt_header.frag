@@ -130,3 +130,15 @@ struct face {
 	};
 
 #endif
+
+
+// Uniform values passed to shader
+uniform vec3 uCamEye;
+uniform vec3 uCamU;
+uniform vec3 uCamV;
+uniform vec3 uCamW;
+uniform float uGlobalTime;
+uniform float uPixelDimension;
+uniform float uPixelWeight;
+uniform vec2 uResolution;
+uniform vec3 uSunPos;

@@ -4,6 +4,8 @@
 var UI = {
 
 
+	_oldMouseX: false,
+	_oldMouseY: false,
 	canvas: null,
 	stats: null,
 	stdout: null,
@@ -58,6 +60,30 @@ var UI = {
 
 		gHeight = this.canvas.height;
 		gWidth = this.canvas.width;
+
+		this.canvas.addEventListener( "mousemove", this.mouseMove.bind( this ) );
+	},
+
+
+	mouseMove: function( ev ) {
+		if( ev.button != 1 ) {
+			return;
+		}
+
+		if( this._oldMouseX === false ) {
+			this._oldMouseX = ev.clientX;
+			this._oldMouseY = ev.clientY;
+
+			return;
+		}
+
+		var moveX = this._oldMouseX - ev.clientX,
+		    moveY = this._oldMouseY - ev.clientY;
+
+		this._oldMouseX = ev.clientX;
+		this._oldMouseY = ev.clientY;
+
+		Camera.updateRotation( moveX, moveY );
 	},
 
 

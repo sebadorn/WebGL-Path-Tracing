@@ -1,15 +1,3 @@
-// Uniform values passed to shader
-uniform vec3 uCamEye;
-uniform vec3 uCamU;
-uniform vec3 uCamV;
-uniform vec3 uCamW;
-uniform float uGlobalTime;
-uniform float uPixelDimensions;
-uniform float uPixelWeight;
-uniform vec2 uResolution;
-uniform vec3 uSunPos;
-
-
 #FILE:pt_header.frag:FILE#
 #FILE:pt_data.frag:FILE#
 #FILE:pt_utils.frag:FILE#
@@ -32,12 +20,7 @@ uniform vec3 uSunPos;
 ray initRay() {
 	vec2 pos = vec2( gl_FragCoord.x - 0.5, gl_FragCoord.y - 0.5 );
 
-	// vec3 eye = vec3( eyeIn[0], eyeIn[1], eyeIn[2] );
-	// vec3 w = vec3( eyeIn[3], eyeIn[4], eyeIn[5] );
-	// vec3 u = vec3( eyeIn[6], eyeIn[7], eyeIn[8] );
-	// vec3 v = vec3( eyeIn[9], eyeIn[10], eyeIn[11] );
-
-	vec3 initialRay = uCamW + uPixelDimensions * 0.5 *
+	vec3 initialRay = uCamW + uPixelDimension * 0.5 *
 			          ( uCamU - float( uResolution.x ) * uCamU + 2.0 * pos.x * uCamU +
 			            uCamV - float( uResolution.y ) * uCamV + 2.0 * pos.y * uCamV );
 
@@ -48,7 +31,7 @@ ray initRay() {
 
 	float rnd = rand();
 	vec3 aaDir = jitter( r.dir, M_PI_X2 * rand(), sqrt( rnd ), sqrt( 1.0 - rnd ) );
-	r.dir = normalize( r.dir +	aaDir * uPixelDimensions * ANTI_ALIASING );
+	r.dir = normalize( r.dir +	aaDir * uPixelDimension * ANTI_ALIASING );
 
 	return r;
 }
@@ -180,15 +163,12 @@ void updateColor(
  * @param {write_only image2d_t}   imageOut
  */
 void main(
-	// view
-	float pxDim,
-	float eyeIn[12],
-
-	// geometry and material related
 	face faces[NUM_FACES],
 	material materials[NUM_MATERIALS]
 ) {
 	initArrayMod3();
+	initArrayFaces();
+	initArrayMaterials();
 	initArraysAccStruct();
 
 	seed = uGlobalTime;
