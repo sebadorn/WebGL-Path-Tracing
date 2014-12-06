@@ -23,6 +23,11 @@ function animate( elapsedTime ) {
 }
 
 
+function cameraUpdate() {
+	// TODO:
+}
+
+
 /**
  * Render the scene.
  * @param {float} elapsedTime Elapsed time since first draw in milliseconds.
@@ -140,6 +145,7 @@ function start() {
  * Main function, entry point.
  */
 function main() {
+	Camera.init( cameraUpdate );
 	UI.init();
 	gl = initWebGL( UI.getCanvas() );
 

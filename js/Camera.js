@@ -5,18 +5,26 @@ var Camera = {
 
 
 	_eye: null,
-	_parent: null,
 	_rot: null,
 	_speed: CFG.CAMERA.SPEED,
 	_up: null,
+	_updateCallback: null,
 
 
-	init: function( parent ) {
-		this._parent = parent;
+	/**
+	 * Initialize the camera.
+	 * @param {Function} fn Function to call when the camera has an update.
+	 */
+	init: function( fn ) {
+		this._updateCallback = fn;
 		this.reset();
 	},
 
 
+	/**
+	 * Get the adjusted center vector.
+	 * @return {THREE.Vector3}
+	 */
 	getAdjustedCenter: function() {
 		return new THREE.Vector3(
 			this._eye.x + this._center.x,
@@ -26,31 +34,54 @@ var Camera = {
 	},
 
 
+	/**
+	 * Get the center vector.
+	 * @return {THREE.Vector3}
+	 */
 	getCenter: function() {
 		return this._center.clone();
 	},
 
 
+	/**
+	 * Get the eye vector.
+	 * @return {THREE.Vector3}
+	 */
 	getEye: function() {
 		return this._eye.clone();
 	},
 
 
+	/**
+	 * Get the x rotation.
+	 * @return {float}
+	 */
 	getRotX: function() {
 		return this._rot.x;
 	},
 
 
+	/**
+	 * Get the y rotation.
+	 * @return {float}
+	 */
 	getRotY: function() {
 		return this._rot.y;
 	},
 
 
+	/**
+	 * Get the up vector.
+	 * @return {THREE.Vector3}
+	 */
 	getUp: function() {
 		return this._up.clone();
 	},
 
 
+	/**
+	 * Move the camera backwards.
+	 */
 	moveBackward: function() {
 		this._eye.x -= Math.sin( MathHelp.degToRad( this._rot.x ) ) *
 		               Math.cos( MathHelp.degToRad( this._rot.y ) ) *
@@ -59,16 +90,22 @@ var Camera = {
 		this._eye.z += Math.cos( MathHelp.degToRad( this._rot.x ) ) *
 		               Math.cos( MathHelp.degToRad( this._rot.y ) ) *
 		               this._speed;
-		this.updateParent();
+		this._updateCallback();
 	},
 
 
+	/**
+	 * Move the camera downwards.
+	 */
 	moveDown: function() {
 		this._eye.y -= this._speed;
-		this.updateParent();
+		this._updateCallback();
 	},
 
 
+	/**
+	 * Move the camera forwards.
+	 */
 	moveForward: function() {
 		this._eye.x += Math.sin( MathHelp.degToRad( this._rot.x ) ) *
 		               Math.cos( MathHelp.degToRad( this._rot.y ) ) *
@@ -77,30 +114,42 @@ var Camera = {
 		this._eye.z -= Math.cos( MathHelp.degToRad( this._rot.x ) ) *
 		               Math.cos( MathHelp.degToRad( this._rot.y ) ) *
 		               this._speed;
-		this.updateParent();
+		this._updateCallback();
 	},
 
 
+	/**
+	 * Move the camera to the left.
+	 */
 	moveLeft: function() {
 		this._eye.x -= Math.cos( MathHelp.degToRad( this._rot.x ) ) * this._speed;
 		this._eye.z -= Math.sin( MathHelp.degToRad( this._rot.x ) ) * this._speed;
-		this.updateParent();
+		this._updateCallback();
 	},
 
 
+	/**
+	 * Move the camera to the right.
+	 */
 	moveRight: function() {
 		this._eye.x += Math.cos( MathHelp.degToRad( this._rot.x ) ) * this._speed;
 		this._eye.z += Math.sin( MathHelp.degToRad( this._rot.x ) ) * this._speed;
-		this.updateParent();
+		this._updateCallback();
 	},
 
 
+	/**
+	 * Move the camera upwards.
+	 */
 	moveUp: function() {
 		this._eye.y += this._speed;
-		this.updateParent();
+		this._updateCallback();
 	},
 
 
+	/**
+	 * Reset the camera to the defaults.
+	 */
 	reset: function() {
 		var cfg = CFG.CAMERA;
 
@@ -113,11 +162,19 @@ var Camera = {
 	},
 
 
+	/**
+	 * Set the movement speed of the camera.
+	 */
 	setSpeed: function( speed ) {
 		this._speed = parseFloat( speed );
 	},
 
 
+	/**
+	 * Update the rotation with the mouse movement.
+	 * @param {int} moveX Pixel distance the mouse travelled on the X axis.
+	 * @param {int} moveY Pixel distance the mouse travelled on the Y axis.
+	 */
 	updateRotation: function( moveX, moveY ) {
 		this._rot.x -= moveX;
 		this._rot.y -= moveY;
@@ -166,14 +223,7 @@ var Camera = {
 			this._up.z = 0.0;
 		}
 
-		this.updateParent();
-	},
-
-
-	updateParent: function() {
-		if( this._parent ) {
-			this._parent.cameraUpdate();
-		}
+		this._updateCallback();
 	}
 
 

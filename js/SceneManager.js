@@ -6,6 +6,7 @@ var SceneManager = {
 
 	_scene: {
 		bvh: null,
+		materials: null,
 		model: null
 	},
 
@@ -22,7 +23,22 @@ var SceneManager = {
 		UI.print( "[SceneManager] Created BVH in " + ( Date.now() - startTime ) + " ms." );
 		UI.print( "[SceneManager] Loading shaders ..." );
 
-		ShaderLoader.load();
+		if( this._scene.materials !== null ) {
+			ShaderLoader.load();
+		}
+	},
+
+
+	/**
+	 * Set the loaded material data.
+	 * @param {Object} mtl Material data for the scene.
+	 */
+	_setMaterialData: function( mtl ) {
+		this._scene.materials = mtl;
+
+		if( this._scene.bvh !== null ) {
+			ShaderLoader.load();
+		}
 	},
 
 
@@ -94,6 +110,21 @@ var SceneManager = {
 			nodes: nodesStr,
 			numFaces: numFaces
 		};
+	},
+
+
+	/**
+	 * Load material data for the scene from a file.
+	 * @param {Event} ev
+	 */
+	loadMaterialFile: function( ev ) {
+		if( !ev.target.files[0] ) {
+			UI.printError( "[SceneManager] No file has been uploaded." );
+			return;
+		}
+
+		var mtll = new MtlLoader();
+		mtll.load( ev.target.files[0], this._setMaterialData.bind( this ) );
 	},
 
 

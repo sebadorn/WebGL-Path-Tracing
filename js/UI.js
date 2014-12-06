@@ -17,9 +17,13 @@ var UI = {
 	init: function() {
 		this.stdout = document.getElementById( "stdout" );
 
-		var inputImport = document.getElementById( "file-import" );
-		var load = SceneManager.loadModelFile.bind( SceneManager );
-		inputImport.addEventListener( "change", load );
+		var inputImportObj = document.getElementById( "file-import-obj" );
+		var loadObj = SceneManager.loadModelFile.bind( SceneManager );
+		inputImportObj.addEventListener( "change", loadObj );
+
+		var inputImportMtl = document.getElementById( "file-import-mtl" );
+		var loadMtl = SceneManager.loadMaterialFile.bind( SceneManager );
+		inputImportMtl.addEventListener( "change", loadMtl );
 
 		this.stats = new Stats();
 		this.stats.setMode( 0 );
