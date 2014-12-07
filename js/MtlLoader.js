@@ -74,13 +74,14 @@ MtlLoader.prototype.parse = function( mtlText ) {
 
 	var isSetTransparency = false;
 	var lines = mtlText.match( /[^\r\n]+/g );
+	var numMaterials = 0;
 	var mtl = null;
 
 	lines.forEach( function( line, index, array ) {
 		line = line.trim();
 
 		if( line.length < 3 || line[0] === "#" ) {
-			continue;
+			return;
 		}
 
 		var parts = line.split( /\s+/g  );
@@ -88,11 +89,13 @@ MtlLoader.prototype.parse = function( mtlText ) {
 		if( parts[0] === "newmtl" ) {
 			if( parts.length < 2 ) {
 				UI.printWarning( "[MtlLoader] No name for <newmtl>. Ignoring entry." );
-				continue;
+				return;
 			}
-			if( this._materials.length > 0 ) {
+			if( numMaterials > 0 ) {
 				this._materials.push( mtl );
 			}
+
+			numMaterials++;
 
 			mtl = new Material();
 			mtl.name = parts[1];
@@ -101,7 +104,7 @@ MtlLoader.prototype.parse = function( mtlText ) {
 		else if( parts[0] === "d" ) {
 			if( parts.length < 2 ) {
 				UI.printWarning( "[MtlLoader] Not enough parameters for <d>. Ignoring attribute." );
-				continue;
+				return;
 			}
 
 			mtl.d = parseFloat( parts[1] );
@@ -111,7 +114,7 @@ MtlLoader.prototype.parse = function( mtlText ) {
 		else if( parts[0] === "Tr" && !isSetTransparency ) {
 			if( parts.length < 2 ) {
 				UI.printWarning( "[MtlLoader] Not enough parameters for <Tr>. Ignoring attribute." );
-				continue;
+				return;
 			}
 
 			mtl.d = 1.0 - parseFloat( parts[1] );
@@ -120,7 +123,7 @@ MtlLoader.prototype.parse = function( mtlText ) {
 		else if( parts[0] === "illum" ) {
 			if( parts.length < 2 ) {
 				UI.printWarning( "[MtlLoader] Not enough parameters for <illum>. Ignoring attribute." );
-				continue;
+				return;
 			}
 
 			mtl.illum = parseInt( parts[1] );
@@ -128,14 +131,14 @@ MtlLoader.prototype.parse = function( mtlText ) {
 			if( mtl.illum < 0 || mtl.illum > 10 ) {
 				UI.printWarning( "[MtlLoader] Invalid value for <illum>. Has to be between 0 and 10. Ignoiring attribute." );
 				mtl.illum = 2;
-				continue;
+				return;
 			}
 		}
 		// Ambient color
 		else if( parts[0] === "Ka" ) {
 			if( parts.length < 4 ) {
 				UI.printWarning( "[MtlLoader] Not enough parameters for <Ka>. Ignoring attribute." );
-				continue;
+				return;
 			}
 
 			mtl.Ka.x = parseFloat( parts[1] );
@@ -146,7 +149,7 @@ MtlLoader.prototype.parse = function( mtlText ) {
 		else if( parts[0] === "Kd" ) {
 			if( parts.length < 4 ) {
 				UI.printWarning( "[MtlLoader] Not enough parameters for <Kd>. Ignoring attribute." );
-				continue;
+				return;
 			}
 
 			mtl.Kd.x = parseFloat( parts[1] );
@@ -157,7 +160,7 @@ MtlLoader.prototype.parse = function( mtlText ) {
 		else if( parts[0] === "Ks" ) {
 			if( parts.length < 4 ) {
 				UI.printWarning( "[MtlLoader] Not enough parameters for <Ks>. Ignoring attribute." );
-				continue;
+				return;
 			}
 
 			mtl.Ks.x = parseFloat( parts[1] );
@@ -168,7 +171,7 @@ MtlLoader.prototype.parse = function( mtlText ) {
 		else if( parts[0] === "Ni" ) {
 			if( parts.length < 2 ) {
 				UI.printWarning( "[MtlLoader] Not enough parameters for <Ni>. Ignorign attribute." );
-				continue;
+				return;
 			}
 
 			mtl.Ni = parseFloat( parts[1] );
@@ -177,7 +180,7 @@ MtlLoader.prototype.parse = function( mtlText ) {
 		else if( parts[0] === "Ns" ) {
 			if( parts.length < 2 ) {
 				UI.printWarning( "[MtlLoader] Not enough parameters for <Ns>. Ignoring attribute." );
-				continue;
+				return;
 			}
 
 			mtl.Ns = parseFloat( parts[1] );
@@ -186,7 +189,7 @@ MtlLoader.prototype.parse = function( mtlText ) {
 		else if( parts[0] === "light" ) {
 			if( parts.length < 2 ) {
 				UI.printWarning( "[MtlLoader] Not enough parameters for <light>. Ignoring attribute." );
-				continue;
+				return;
 			}
 
 			mtl.light = parseInt( parts[1] );
@@ -195,7 +198,7 @@ MtlLoader.prototype.parse = function( mtlText ) {
 		else if( parts[0] === "rough" ) {
 			if( parts.length < 2 ) {
 				UI.printWarning( "[MtlLoader] Not enough parameters for <rough>. Ignoring attribute." );
-				continue;
+				return;
 			}
 
 			mtl.rough = parseFloat( parts[1] );
@@ -204,7 +207,7 @@ MtlLoader.prototype.parse = function( mtlText ) {
 		else if( parts[0] === "p" ) {
 			if( parts.length < 2 ) {
 				UI.printWarning( "[MtlLoader] Not enough parameters for <p>. Ignoring attribute." );
-				continue;
+				return;
 			}
 
 			mtl.p = parseFloat( parts[1] );
@@ -213,7 +216,7 @@ MtlLoader.prototype.parse = function( mtlText ) {
 		else if( parts[0] === "nu" ) {
 			if( parts.length < 2 ) {
 				UI.printWarning( "[MtlLoader] Not enough parameters for <nu>. Ignoring attribute." );
-				continue;
+				return;
 			}
 
 			mtl.nu = parseFloat( parts[1] );
@@ -222,7 +225,7 @@ MtlLoader.prototype.parse = function( mtlText ) {
 		else if( parts[0] === "nv" ) {
 			if( parts.length < 2 ) {
 				UI.printWarning( "[MtlLoader] Not enough parameters for <nv>. Ignoring attribute." );
-				continue;
+				return;
 			}
 
 			mtl.nv = parseFloat( parts[1] );
@@ -231,7 +234,7 @@ MtlLoader.prototype.parse = function( mtlText ) {
 		else if( parts[0] === "Rs" ) {
 			if( parts.length < 2 ) {
 				UI.printWarning( "[MtlLoader] Not enough parameters for <Rs>. Ignoring attribute." );
-				continue;
+				return;
 			}
 
 			mtl.Rs = parseFloat( parts[1] );
@@ -240,12 +243,12 @@ MtlLoader.prototype.parse = function( mtlText ) {
 		else if( parts[0] === "Rd" ) {
 			if( parts.length < 2 ) {
 				UI.printWarning( "[MtlLoader] Not enough parameters for <Rd>. Ignoring attribute." );
-				continue;
+				return;
 			}
 
 			mtl.Rd = parseFloat( parts[1] );
 		}
-	} );
+	}.bind( this ) );
 
 	if( this._materials.length > 0 ) {
 		this._materials.push( mtl );

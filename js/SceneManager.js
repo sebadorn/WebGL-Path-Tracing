@@ -63,7 +63,7 @@ var SceneManager = {
 				numNonLeaves: 0
 			},
 			numFaces: this._scene.model.facesV.length / 3,
-			numMaterials: 1 // TODO: load materials and get number here
+			numMaterials: this._scene.materials.length
 		};
 	},
 

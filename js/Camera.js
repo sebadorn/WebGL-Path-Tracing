@@ -4,10 +4,11 @@
 var Camera = {
 
 
-	_eye: null,
-	_rot: null,
+	_center: new THREE.Vector3(),
+	_eye: new THREE.Vector3(),
+	_rot: new THREE.Vector2(),
 	_speed: CFG.CAMERA.SPEED,
-	_up: null,
+	_up: new THREE.Vector3(),
 	_updateCallback: null,
 
 
