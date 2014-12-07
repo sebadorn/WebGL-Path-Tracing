@@ -8,9 +8,9 @@
 var Material = function() {
 	// Part of the standard
 	this.name = "";
-	this.Ka = THREE.Vector3( 0.0, 0.0, 0.0 );
-	this.Kd = THREE.Vector3( 0.0, 0.0, 0.0 );
-	this.Ks = THREE.Vector3( 0.0, 0.0, 0.0 );
+	this.Ka = new THREE.Vector3( 1.0, 1.0, 1.0 );
+	this.Kd = new THREE.Vector3( 1.0, 1.0, 1.0 );
+	this.Ks = new THREE.Vector3( 1.0, 1.0, 1.0 );
 	this.Ns = 100.0;
 	this.Ni = 1.0;
 	this.d = 1.0;

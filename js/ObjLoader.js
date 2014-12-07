@@ -15,19 +15,35 @@ var Object3D = function( objectName ) {
 };
 
 
+var Face = function() {
+	// Vertex indices
+	this.a = false;
+	this.b = false;
+	this.c = false;
+	// Vertex normal indices
+	this.an = false;
+	this.bn = false;
+	this.cn = false;
+	// Material name
+	this.material = "";
+};
+
+
 
 /**
  * Class for loading an OBJ model.
  * @constructor
  */
 var ObjLoader = function() {
+	this._faces = []; // <Array<Face>>
+
 	this.facesV = [];
 	this.facesVN = [];
 	this.facesVT = [];
-	this.normals = [];
+	this._normals = [];
 	this.objects = [];
 	this.vertexTextures = [];
-	this.vertices = [];
+	this._vertices = [];
 };
 
 
@@ -37,13 +53,14 @@ var ObjLoader = function() {
  */
 ObjLoader.prototype.getObj = function() {
 	return {
+		faces: this._faces,
 		facesV: this.facesV,
 		facesVN: this.facesVN,
 		facesVT: this.facesVT,
-		normals: this.normals,
+		normals: this._normals,
 		objects: this.objects,
 		vertexTextures: this.vertexTextures,
-		vertices: this.vertices
+		vertices: this._vertices
 	};
 };
 
@@ -60,7 +77,7 @@ ObjLoader.prototype.load = function( file, callback ) {
 		this.parse( ev.target.result );
 		UI.print( "[ObjLoader] Loaded " + this.objects.length + " objects:" );
 		UI.print( "- faces: " + this.facesV.length );
-		UI.print( "- vertices: " + this.vertices.length );
+		UI.print( "- vertices: " + this._vertices.length );
 		callback( this.getObj() );
 	}.bind( this ) );
 
@@ -74,6 +91,7 @@ ObjLoader.prototype.load = function( file, callback ) {
  */
 ObjLoader.prototype.parse = function( objText ) {
 	var lines = objText.match( /[^\r\n]+/g );
+	var currentMaterial = "";
 
 	lines.forEach( function( line, index, array ) {
 		line = line.trim();
@@ -119,6 +137,17 @@ ObjLoader.prototype.parse = function( objText ) {
 		else if( line[0] === "f" && line[1] === " " ) {
 			var lineFaces = this._parseFace( line );
 
+			var face = new Face();
+			face.material = currentMaterial;
+			face.a = lineFaces.facesV[0];
+			face.b = lineFaces.facesV[1];
+			face.c = lineFaces.facesV[2];
+			face.an = lineFaces.facesVN[0];
+			face.bn = lineFaces.facesVN[1];
+			face.cn = lineFaces.facesVN[2];
+
+			this._faces.push( face );
+
 			if( this.objects.length > 0 ) {
 				var o = this.objects[this.objects.length - 1];
 				o.facesV = o.facesV.concat( lineFaces.facesV );
@@ -129,7 +158,9 @@ ObjLoader.prototype.parse = function( objText ) {
 
 		// Material
 		else if( line.search( /^usemtl / ) === 0 ) {
-			UI.printWarning( "[ObjLoader] TODO: Handle 'usemtl' lines." );
+			var parts = line.split( /\s+/g );
+
+			currentMaterial = parts[1];
 		}
 	}.bind( this ) );
 };
@@ -205,7 +236,7 @@ ObjLoader.prototype._parseFace = function( line ) {
 ObjLoader.prototype._parseVertex = function( line ) {
 	var parts = line.split( /\s+/g );
 
-	this.vertices.push(
+	this._vertices.push(
 		parseFloat( parts[1] ),
 		parseFloat( parts[2] ),
 		parseFloat( parts[3] )
@@ -220,7 +251,7 @@ ObjLoader.prototype._parseVertex = function( line ) {
 ObjLoader.prototype._parseVertexNormal = function( line ) {
 	var parts = line.split( /\s+/g );
 
-	this.normals.push(
+	this._normals.push(
 		parseFloat( parts[1] ),
 		parseFloat( parts[2] ),
 		parseFloat( parts[3] )

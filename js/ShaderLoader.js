@@ -54,6 +54,8 @@ var ShaderLoader = {
 	 */
 	_setDefineValues: function( source ) {
 		var acc = SceneManager.getAccStructData();
+		var fcStr = SceneManager.getFacesString();
+		var mtlStr = SceneManager.getMaterialsString();
 		var cl = CFG.CLEAR_COLOR;
 		var skyLight = "vec3( " + cl[0] + ", " + cl[1] + ", " + cl[2] + " )";
 
@@ -78,6 +80,9 @@ var ShaderLoader = {
 
 		source = source.replace( "%DATA_BVH_FACES%", acc.bvh.facesStr );
 		source = source.replace( "%DATA_BVH_NODES%", acc.bvh.nodesStr );
+
+		source = source.replace( "%DATA_FACES%", fcStr );
+		source = source.replace( "%DATA_MATERIALS%", mtlStr );
 
 		return source;
 	},

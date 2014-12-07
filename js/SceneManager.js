@@ -47,7 +47,7 @@ var SceneManager = {
 	 * @return {Object} Data about the acceleration structure.
 	 */
 	getAccStructData: function() {
-		var bvhStrings = this.getBVHShaderData();
+		var bvhStrings = this.getBVHShaderDataStrings();
 
 		return {
 			bvh: {
@@ -72,7 +72,7 @@ var SceneManager = {
 	 * Get BVH data as string to inject directly into GLSL code instead of passing it per OpenGL.
 	 * @return {Object} Object with strings for nodes and faces.
 	 */
-	getBVHShaderData: function() {
+	getBVHShaderDataStrings: function() {
 		var facesStr = "";
 		var nodesStr = "";
 		var nodes = this._scene.bvh.nodes;
@@ -110,6 +110,80 @@ var SceneManager = {
 			nodes: nodesStr,
 			numFaces: numFaces
 		};
+	},
+
+
+	getFacesString: function() {
+		var facesStr = "";
+		var vertices = this._scene.model.vertices;
+		var normals = this._scene.model.normals;
+		var materials = this._scene.materials;
+		var faces = this._scene.model.faces;
+
+		for( var i = 0; i < faces.length; i++ ) {
+			var f = faces[i];
+
+			var vertAStr = "vec3( " + vertices[f.a * 3] + ", " + vertices[f.a * 3 + 1] + ", " + vertices[f.a * 3 + 2] + " )";
+			var vertBStr = "vec3( " + vertices[f.b * 3] + ", " + vertices[f.b * 3 + 1] + ", " + vertices[f.b * 3 + 2] + " )";
+			var vertCStr = "vec3( " + vertices[f.c * 3] + ", " + vertices[f.c * 3 + 1] + ", " + vertices[f.c * 3 + 2] + " )";
+			var verticesStr = vertAStr + ", " + vertBStr + ", " + vertCStr;
+
+			var normalAStr = "vec3( " + normals[f.an * 3] + ", " + normals[f.an * 3 + 1] + ", " + normals[f.an * 3 + 2] + " )";
+			var normalBStr = "vec3( " + normals[f.bn * 3] + ", " + normals[f.bn * 3 + 1] + ", " + normals[f.bn * 3 + 2] + " )";
+			var normalCStr = "vec3( " + normals[f.cn * 3] + ", " + normals[f.cn * 3 + 1] + ", " + normals[f.cn * 3 + 2] + " )";
+			var normalsStr = normalAStr + ", " + normalBStr + ", " + normalCStr;
+
+			var mtlIndex = "0";
+
+			for( var j = 0; j < materials.length; j++ ) {
+				if( f.material === materials[j].name ) {
+					mtlIndex = j;
+					break;
+				}
+			}
+
+			facesStr += "faces[" + i + "] = face( " + verticesStr + ", " + normalsStr + ", " + mtlIndex + " );\n";
+		}
+
+		return facesStr;
+	},
+
+
+	getMaterialsString: function() {
+		var materialsStr = "";
+		var materials = this._scene.materials;
+
+		for( var i = 0; i < materials.length; i++ ) {
+			var m = materials[i];
+			var mtlStr = "";
+
+			// Schlick
+			if( CFG.SHADER.BRDF == 0 ) {
+				mtlStr += m.d.toFixed( 6 ) + ", ";
+				mtlStr += m.Ni.toFixed( 6 ) + ", ";
+				mtlStr += m.p.toFixed( 6 ) + ", ";
+				mtlStr += m.rough.toFixed( 6 ) + ", ";
+				mtlStr += "vec3( " + m.Kd.x + ", " + m.Kd.y + ", " + m.Kd.z + " ), ";
+				mtlStr += "vec3( " + m.Ks.x + ", " + m.Ks.y + ", " + m.Ks.z + " ), ";
+				mtlStr += ( !!m.light ).toString();
+			}
+			// Shirley-Ashikhmin
+			else if( CFG.SHADER.BRDF == 1 ) {
+				mtlStr += m.nu.toFixed( 6 ) + ", ";
+				mtlStr += m.nv.toFixed( 6 ) + ", ";
+				mtlStr += m.Rs.toFixed( 6 ) + ", ";
+				mtlStr += m.Rd.toFixed( 6 ) + ", ";
+				mtlStr += m.d.toFixed( 6 ) + ", ";
+				mtlStr += m.Ni.toFixed( 6 ) + ", ";
+				mtlStr += "vec3( " + m.Kd.x + ", " + m.Kd.y + ", " + m.Kd.z + " ), ";
+				mtlStr += "vec3( " + m.Ks.x + ", " + m.Ks.y + ", " + m.Ks.z + " ), ";
+				mtlStr += ( !!m.light ).toString();
+			}
+
+			materialsStr += "materials[" + i + "] = material( " + mtlStr + " );\n";
+		}
+
+		return materialsStr;
 	},
 
 

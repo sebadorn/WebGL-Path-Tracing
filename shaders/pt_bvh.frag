@@ -16,10 +16,16 @@
 void intersectFaces(
 	inout ray r, bvhNode node, face faces[NUM_FACES], float tNear, float tFar
 ) {
-	for( int i = 0; i < node.facesInterval.y; i++ ) {
+	for( int i = 0; i < NUM_FACES; i++ ) {
+		if( i >= node.facesInterval.y ) {
+			break;
+		}
+
+		int index = node.facesInterval.x + i;
+		int index2 = bvhFaces[index];
 		vec3 tuv;
 		vec3 normal = checkFaceIntersection(
-			r, faces[bvhFaces[node.facesInterval.x + i]], tuv, tNear, tFar
+			r, faces[index2], tuv, tNear, tFar
 		);
 
 		if( tuv.x < INFINITY ) {
@@ -45,11 +51,15 @@ void intersectFaces(
 void traverse( inout ray r, face faces[NUM_FACES] ) {
 	int bvhStack[BVH_STACKSIZE];
 	int stackIndex = 0;
-	bvhStack[stackIndex] = 0; // Node 0 is always the BVH root node
+	bvhStack[0] = 0; // Node 0 is always the BVH root node
 
 	vec3 invDir = 1.0 / r.dir;
 
-	while( stackIndex >= 0 ) {
+	for( int i = 0; i < NUM_BVH_NODES; i++ ) { // Fuck GLSL 1.0 for not having while or endless loops.
+		if( stackIndex < 0 ) {
+			break;
+		}
+
 		bvhNode node = bvh[bvhStack[stackIndex--]];
 		float tNearL = 0.0;
 		float tFarL = INFINITY;
@@ -121,11 +131,14 @@ void traverse_shadows( ray r, face faces[NUM_FACES] ) {
 
 	int bvhStack[BVH_STACKSIZE];
 	int stackIndex = 0;
-	bvhStack[stackIndex] = 0; // Node 0 is always the BVH root node
+	bvhStack[0] = 0; // Node 0 is always the BVH root node
 
 	vec3 invDir = 1.0 / r.dir;
 
-	while( stackIndex >= 0 ) {
+	for( int i = 0; i < NUM_BVH_NODES; i++ ) { // Fuck GLSL 1.0 for not having while or endless loops.
+		if( stackIndex < 0 ) {
+			break;
+		}
 		bvhNode node = bvh[bvhStack[stackIndex--]];
 		tNearL = 0.0;
 		tFarL = INFINITY;

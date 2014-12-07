@@ -151,21 +151,8 @@ void updateColor(
 
 /**
  * Do the path tracing and calculate the final color for the pixel.
- * @param {uvec2}            offset
- * @param {float}                  seed
- * @param {float}                  pixelWeight
- * @param {face_t*}   faces
- * @param {bvhNode*}  bvh
- * @param {rayBase*}  initRays
- * @param {material*} materials
- * @param {float*}    specPowerDists
- * @param {read_only image2d_t}    imageIn
- * @param {write_only image2d_t}   imageOut
  */
-void main(
-	face faces[NUM_FACES],
-	material materials[NUM_MATERIALS]
-) {
+void main() {
 	initArrayMod3();
 	initArrayFaces();
 	initArrayMaterials();
@@ -180,11 +167,15 @@ void main(
 	for( int sample = 0; sample < SAMPLES; sample++ ) {
 		color = vec3( 1.0 );
 		vec3 lightColor = vec3( -1.0 );
-		ray r = initRay( pxDim, eyeIn );
+		ray r = initRay();
 		float maxValSpd = 0.0;
 		int depthAdded = 0;
 
-		for( int depth = 0; depth < MAX_DEPTH + depthAdded; depth++ ) {
+		for( int depth = 0; depth < MAX_DEPTH + MAX_ADDED_DEPTH; depth++ ) {
+			if( depth >= MAX_DEPTH + depthAdded ) {
+				break;
+			}
+
 			CALL_TRAVERSE
 
 			if( r.t == INFINITY ) {
@@ -195,7 +186,7 @@ void main(
 			material mtl = materials[faces[r.faceIndex].material];
 
 			// Implicit connection to a light found
-			if( mtl.light == 1 ) {
+			if( mtl.isLight ) {
 				lightColor = mtl.colorDiff;
 				break;
 			}
@@ -212,6 +203,7 @@ void main(
 
 			vec3 lightRaySource = vec3( -1.0 );
 			ray lightRay;
+			material lightMtl;
 			lightRay.t = INFINITY;
 
 			#if IMPLICIT == 1
@@ -227,8 +219,8 @@ void main(
 						lightRaySource = SKY_LIGHT;
 					}
 					else {
-						material lightMTL = materials[faces[lightRay.faceIndex].material];
-						lightRaySource = lightMTL.isLight ? lightMTL.color : vec3( -1.0 );
+						lightMtl = materials[faces[lightRay.faceIndex].material];
+						lightRaySource = lightMtl.isLight ? lightMtl.color : vec3( -1.0 );
 					}
 				}
 
@@ -238,12 +230,12 @@ void main(
 			ray newRay = getNewRay( r, mtl, addDepth );
 
 			updateColor(
-				r, newRay, mtl, lightRay, lightRaySource, secondaryPaths,
+				r, newRay, mtl, lightRay, lightMtl, secondaryPaths,
 				color, colorTotal
 			);
 
 			// Extend max path depth
-			depthAdded += ( addDepth && depthAdded < MAX_ADDED_DEPTH );
+			depthAdded += int( addDepth && depthAdded < MAX_ADDED_DEPTH );
 
 			// TODO:
 			// // Russian roulette termination
@@ -260,11 +252,11 @@ void main(
 	} // end samples
 
 
-	colorTotal /= (float) secondaryPaths;
+	colorTotal /= float( secondaryPaths );
 
 	#if SAMPLES > 1
 
-		colorTotal /= (float) SAMPLES;
+		colorTotal /= float( SAMPLES );
 
 	#endif
 

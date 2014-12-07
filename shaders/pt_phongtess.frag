@@ -118,7 +118,11 @@ vec3 phongTessTriAndRayIntersect(
 	float determinant = INFINITY;
 	float mA, mB, mC, mD, mE, mF;
 
-	for( int i = 0; i < numCubicRoots; i++ ) {
+	for( int i = 0; i < 3; i++ ) {
+		if( i >= numCubicRoots ) {
+			break;
+		}
+
 		mA = a * xs[i] + l;
 		mB = b * xs[i] + m;
 		mD = d * xs[i] + o;
@@ -181,7 +185,11 @@ vec3 phongTessTriAndRayIntersect(
 		float c2 = h * ( ba * h + 2.0 * fe ) + c;
 		int numResults = solveCubic( 0.0, c0, c1, c2, xs );
 
-		for( int i = 0; i < numResults; i++ ) {
+		for( int i = 0; i < 3; i++ ) {
+			if( i >= numResults ) {
+				break;
+			}
+
 			float u = xs[i];
 			float v = g * u + h;
 			float w = 1.0 - u - v;
@@ -195,7 +203,17 @@ vec3 phongTessTriAndRayIntersect(
 			}
 
 			vec3 pTessellated = phongTessellation( P1, P2, P3, N1, N2, N3, u, v, w ) - r.origin;
-			float t = pTessellated[domain] / r.dir[domain];
+			float t;
+
+			if( domain == 0 ) {
+				t = pTessellated.x / r.dir.x;
+			}
+			else if( domain == 1 ) {
+				t = pTessellated.y / r.dir.y;
+			}
+			else {
+				t = pTessellated.z / r.dir.z;
+			}
 
 			// tuv.x -- best hit in this AABB so far
 			// r.t   -- best hit found in other AABBs so far
