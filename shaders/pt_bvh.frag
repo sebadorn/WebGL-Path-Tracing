@@ -43,9 +43,7 @@ void intersectFaces(
 
 /**
  * Traverse the BVH and test the faces against the given ray.
- * @param {bvhNode[]} bvh
- * @param {int[]}    bvhFaces
- * @param {ray}       r
+ * @param {inout ray} r
  * @param {face[]}    faces
  */
 void traverse( inout ray r, face faces[NUM_FACES] ) {
